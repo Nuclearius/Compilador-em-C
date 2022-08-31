@@ -20,18 +20,17 @@ tipoToken *createToken(char* lex, char* sim)
     return newToken;
 }
 
-void addToList(tipoToken* list,char* lex, char* sim)
+void addToList(tipoToken** list,char* lex, char* sim)
 {
-
-    if (list == NULL)
+    if (*list == NULL)
     {
-        list = createToken(lex,sim);
+        *list = createToken(lex,sim);
     }
     else
     {
-        addToList(list->next, lex, sim);
-
+        addToList(&(*list)->next, lex, sim);
     }
+
 }
 
 int main()
@@ -41,7 +40,8 @@ int main()
     char d[] = "there";
     for (int I = 0; I < 10; I++)
     {
-        addToList(list, c,d);
+        addToList(&list, c,d);
+
     }
     while (list != NULL){
         printf("OWK: %s %s\n", list->lexema, list->Simbolo);
@@ -53,7 +53,7 @@ int main()
     char c;
 
     while(c != 0)                                                                                   //logica q o professor passou
-    do{
+    do{                                                                                             //n garanto q funfa
             while((c == '{' || c == 32 ) && c != 0)
         do{ if (c == '{')
             {
@@ -91,7 +91,6 @@ int main()
            //ler
         }
     }
-
 
     int isLetra (char c)
     {
