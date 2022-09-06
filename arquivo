@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+typedef struct tipoToken{
+    char* lexema;
+    char* Simbolo;
+    struct tipoToken *next;
+}tipoToken;
+
+FILE *arquivo;
+
+tipoToken *createToken(char* lex, char* sim)
+{
+    tipoToken *newToken = malloc(sizeof(tipoToken));
+    newToken->lexema = malloc(strlen(lex));
+    newToken->lexema = lex;
+    newToken->Simbolo = malloc(strlen(sim));
+    newToken->Simbolo = sim;
+    newToken->next = NULL;
+    return newToken;
+}
+
+void addToList(tipoToken** list,char* lex, char* sim)
+{
+    if (*list == NULL)
+    {
+        *list = createToken(lex,sim);
+    }
+    else
+    {
+        addToList(&(*list)->next, lex, sim);
+    }
+
+}
+
+int main()
+{
+
+    if(!(arquivo=fopen(gera1.txt ,"r"))
+    {
+        printf("ERRO");
+        exit(1);
+    }
+
+
+    int fclose(char arquivo);
+   return 0;
