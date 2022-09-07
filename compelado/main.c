@@ -33,78 +33,76 @@ void addToList(tipoToken** list,char* lex, char* sim)
 
 }
 
+void tratarIdentificador(tipoToken* list)
+{
+    char* ID;
+    /*
+    while (c for letra ou numero ou "_")
+    {
+        coloca em ID
+        ler;
+    }
+        */
+    if (strcmp(ID = "programa") == 0)
+        addToList(&list, ID, "sprograma");              //palavras reservadas, mais else ifs aki
+    else
+        addToList(&list, ID, "sidentificador");
+}
+
+void tratarDigito(tipoToken* list)
+{
+    char* ID;
+    /*
+    while(c = for numero)
+    {
+        coloca em ID;
+        ler;
+    }
+    */
+    addToList(&list, ID, "snumero");
+}
+
+void tratarOperador(tipoToken* list, char c)
+{
+    switch(c)
+    {
+    case ':': addToList(&list, c, "sdoispontos"); break;
+    case '+': addToList(&list, c, "smais"); break;
+    case '-': addToList(&list, c, "smenos"); break;
+    case '*': addToList(&list, c, "smult"); break;
+    case '!': addToList(&list, c, "s"); break;
+    case '<': addToList(&list, c, "smenor"); break;
+    case '>': addToList(&list, c, "smaior"); break;
+    case '=': addToList(&list, c, "sig"); break;
+    case ';': addToList(&list, c, "sponto_virgula"); break;
+    case ',': addToList(&list, c, "svirgula"); break;
+    case '(': addToList(&list, c, "sabre_parenteses"); break;
+    case ')': addToList(&list, c, "sfecha_parenteses"); break;
+    case '.': addToList(&list, c, "sponto"); break;
+    case default: printf("erro"); break;
+    }
+}
+
 int main()
 {
-    tipoToken* list = NULL;                                                                         //teste da lista
-    char c[] = "hello";                                                                             //o add n ta atualizando na mai ainda
-    char d[] = "there";
-    for (int I = 0; I < 10; I++)
-    {
-        addToList(&list, c,d);
-
-    }
-    while (list != NULL){
-        printf("OWK: %s %s\n", list->lexema, list->Simbolo);
-        list = list->next;
-    };
-    /*
-    //abre arquivo
-    //ler
+    tipoToken* list = NULL;
+    //abrir aqruivo
+    //ler (passar pro próximo e colocar em c)
     char c;
 
-    while(c != 0)                                                                                   //logica q o professor passou
-    do{                                                                                             //n garanto q funfa
-            while((c == '{' || c == 32 ) && c != 0)
-        do{ if (c == '{')
-            {
-                while(c != '}' && c != 0)
-                do{
-                    //ler
-                }
-                //ler
-            }
-            while(c == 32 && c != 0)
-            do{
-                    //ler
-            }
-        }
-        if (c != 0)
-        {
-            //pega
-            //insere
-        }
+    while (c != 0)
+    {
+        /*
+        if (c for letra)
+            tratarIdentificador(list);
+        else if (c for número)
+            tratarDigito(list);
+        else if (c != 32)
+            tratarOperador(list);
     }
-    //fecha
     */
     return 0;
 }
-/*
-    void TrataIdentificador() //e palavra reservada
-    {
-        char* ID;
-        char c;
-        ID = c;
-        //ler
-        while(isLetra(c) == 1 || isDigito(c) == 1 || c == '_')
-        {
-           ID == ID + c;
-           //ler
-        }
-    }
 
-    int isLetra (char c)
-    {
-        if ((c >= 65 && c <= 90 ) || (c >=97 && c <= 122 ))
-            return 1;
-        else
-            return 0;
-    }
 
-    int isDigito(char c)
-    {
-        if (c >= 48 && c <=57)
-            return 1;
-        else
-            return 0;
-    }
-*/
+
