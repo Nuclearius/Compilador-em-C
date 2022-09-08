@@ -27,10 +27,10 @@ void tratarOperador(tipoToken* list, char c);
 
 int main(){
     tipoToken* list = NULL;
-    if(!(arquivo=fopen(gera1.txt ,"r"))
-    {
+    if(!(arquivo=fopen("gera1.txt ","r"))) {
         printf("ERRO");
         exit(1);
+    }
     //ler (passar pro pr�ximo e colocar em c)
     char c;
 
@@ -45,7 +45,7 @@ int main(){
             tratarOperador(list);
     }
     */
-        int fclose(char arquivo);
+         fclose(arquivo);
         return 0;
 }
 
