@@ -4,6 +4,7 @@
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* STRUCT *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
+ FILE *arquivo;
 typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
@@ -26,7 +27,10 @@ void tratarOperador(tipoToken* list, char c);
 
 int main(){
     tipoToken* list = NULL;
-    //abrir aqruivo
+    if(!(arquivo=fopen(gera1.txt ,"r"))
+    {
+        printf("ERRO");
+        exit(1);
     //ler (passar pro pr�ximo e colocar em c)
     char c;
 
@@ -41,7 +45,8 @@ int main(){
             tratarOperador(list);
     }
     */
-    return 0;
+        int fclose(char arquivo);
+        return 0;
 }
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* FUNÇÕES *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
