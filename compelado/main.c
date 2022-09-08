@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* STRUCT *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 typedef struct tipoToken{
     char* lexema;
@@ -9,8 +10,43 @@ typedef struct tipoToken{
     struct tipoToken *next;
 }tipoToken;
 
-tipoToken *createToken(char* lex, char* sim)
-{
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÃ‡ALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+
+tipoToken *createToken(char* lex, char* sim);
+
+void addToList(tipoToken** list,char* lex, char* sim);
+
+void tratarIdentificador(tipoToken* list);
+
+void tratarDigito(tipoToken* list);
+
+void tratarOperador(tipoToken* list, char c);
+
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+
+int main(){
+    tipoToken* list = NULL;
+    //abrir aqruivo
+    //ler (passar pro prï¿½ximo e colocar em c)
+    char c;
+
+    while (c != 0)
+        /*
+     {
+        if (c for letra)
+            tratarIdentificador(list);
+        else if (c for nï¿½mero)
+            tratarDigito(list);
+        else if (c != 32)
+            tratarOperador(list);
+    }
+    */
+    return 0;
+}
+
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* FUNÃ‡Ã•ES *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+
+tipoToken *createToken(char* lex, char* sim){
     tipoToken *newToken = malloc(sizeof(tipoToken));
     newToken->lexema = malloc(strlen(lex));
     newToken->lexema = lex;
@@ -20,8 +56,7 @@ tipoToken *createToken(char* lex, char* sim)
     return newToken;
 }
 
-void addToList(tipoToken** list,char* lex, char* sim)
-{
+void addToList(tipoToken** list,char* lex, char* sim){
     if (*list == NULL)
     {
         *list = createToken(lex,sim);
@@ -33,8 +68,7 @@ void addToList(tipoToken** list,char* lex, char* sim)
 
 }
 
-void tratarIdentificador(tipoToken* list)
-{
+void tratarIdentificador(tipoToken* list){
     char* ID;
     /*
     while (c for letra ou numero ou "_")
@@ -49,8 +83,7 @@ void tratarIdentificador(tipoToken* list)
         addToList(&list, ID, "sidentificador");
 }
 
-void tratarDigito(tipoToken* list)
-{
+void tratarDigito(tipoToken* list){
     char* ID;
     /*
     while(c = for numero)
@@ -62,47 +95,22 @@ void tratarDigito(tipoToken* list)
     addToList(&list, ID, "snumero");
 }
 
-void tratarOperador(tipoToken* list, char c)
-{
-    switch(c)
-    {
-    case ':': addToList(&list, c, "sdoispontos"); break;
-    case '+': addToList(&list, c, "smais"); break;
-    case '-': addToList(&list, c, "smenos"); break;
-    case '*': addToList(&list, c, "smult"); break;
-    case '!': addToList(&list, c, "s"); break;
-    case '<': addToList(&list, c, "smenor"); break;
-    case '>': addToList(&list, c, "smaior"); break;
-    case '=': addToList(&list, c, "sig"); break;
-    case ';': addToList(&list, c, "sponto_virgula"); break;
-    case ',': addToList(&list, c, "svirgula"); break;
-    case '(': addToList(&list, c, "sabre_parenteses"); break;
-    case ')': addToList(&list, c, "sfecha_parenteses"); break;
-    case '.': addToList(&list, c, "sponto"); break;
-    case default: printf("erro"); break;
+void tratarOperador(tipoToken* list, char c){
+
+    switch(c){
+        case ':': addToList(&list, c, "sdoispontos"); break;
+        case '+': addToList(&list, c, "smais"); break;
+        case '-': addToList(&list, c, "smenos"); break;
+        case '*': addToList(&list, c, "smult"); break;
+        case '!': addToList(&list, c, "s"); break;
+        case '<': addToList(&list, c, "smenor"); break;
+        case '>': addToList(&list, c, "smaior"); break;
+        case '=': addToList(&list, c, "sig"); break;
+        case ';': addToList(&list, c, "sponto_virgula"); break;
+        case ',': addToList(&list, c, "svirgula"); break;
+        case '(': addToList(&list, c, "sabre_parenteses"); break;
+        case ')': addToList(&list, c, "sfecha_parenteses"); break;
+        case '.': addToList(&list, c, "sponto"); break;
+        case default: printf("erro"); break;
     }
 }
-
-int main()
-{
-    tipoToken* list = NULL;
-    //abrir aqruivo
-    //ler (passar pro próximo e colocar em c)
-    char c;
-
-    while (c != 0)
-    {
-        /*
-        if (c for letra)
-            tratarIdentificador(list);
-        else if (c for número)
-            tratarDigito(list);
-        else if (c != 32)
-            tratarOperador(list);
-    }
-    */
-    return 0;
-}
-
-
-
