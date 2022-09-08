@@ -21,7 +21,7 @@ void tratarIdentificador(tipoToken* list);
 
 void tratarDigito(tipoToken* list);
 
-void tratarOperador(tipoToken* list, char c);
+void tratarOperador(tipoToken* list);
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -35,16 +35,16 @@ int main(){
     char c;
 
     while (c != 0)
-        /*
      {
-        if (c for letra)
+        if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             tratarIdentificador(list);
-        else if (c for n�mero)
+        else if (c >=48 && c <= 57)
             tratarDigito(list);
         else if (c != 32)
             tratarOperador(list);
+        //else
+            //ler
     }
-    */
          fclose(arquivo);
         return 0;
 }
@@ -75,33 +75,66 @@ void addToList(tipoToken** list,char* lex, char* sim){
 
 void tratarIdentificador(tipoToken* list){
     char* ID;
-    /*
-    while (c for letra ou numero ou "_")
+    char palavrasReservadas[][20] = { "programa",
+                                    "se",
+                                    "entao",
+                                    "senao",
+                                    "enquanto",
+                                    "faca",
+                                    "inicio",
+                                    "fim",
+                                    "escreva",
+                                    "leia",
+                                    "var",
+                                    "inteiro",
+                                    "booleano",
+                                    "verdadeiro",
+                                    "falso",
+                                    "procedimento",
+                                    "funcao",
+                                    "div",
+                                    "e",
+                                    "ou",
+                                    "nao"};
+    char* s = "s";
+    char c;
+
+    while ((c >= 65 && c <=90) || (c >= 97 && c <= 122) || (c >=48 && c <= 57) || c == '_')
     {
+        /*
         coloca em ID
         ler;
-    }
         */
-    if (strcmp(ID = "programa") == 0)
-        addToList(&list, ID, "sprograma");              //palavras reservadas, mais else ifs aki
-    else
-        addToList(&list, ID, "sidentificador");
+    }
+
+
+    for (int I = 0; I < 21; I++)
+    {
+        if ( strcmp(ID,palavrasReservadas[I]))
+        {
+            strcat(s, palavrasReservadas[I]);
+            addToList(&list, ID, s);
+            return;
+        }
+    }
+    addToList(&list, ID, "sidentificador");
 }
 
 void tratarDigito(tipoToken* list){
     char* ID;
-    /*
-    while(c = for numero)
+    char c;
+    while(c >=48 && c <= 57)
     {
+        /*
         coloca em ID;
         ler;
+        */
     }
-    */
     addToList(&list, ID, "snumero");
 }
 
-void tratarOperador(tipoToken* list, char c){
-
+void tratarOperador(tipoToken* list){
+    char c;
     switch(c){
         case ':': addToList(&list, c, "sdoispontos"); break;
         case '+': addToList(&list, c, "smais"); break;
@@ -116,6 +149,6 @@ void tratarOperador(tipoToken* list, char c){
         case '(': addToList(&list, c, "sabre_parenteses"); break;
         case ')': addToList(&list, c, "sfecha_parenteses"); break;
         case '.': addToList(&list, c, "sponto"); break;
-        case default: printf("erro"); break;
+        default: printf("Erro, Operador %c não identificado", c); break;
     }
 }
