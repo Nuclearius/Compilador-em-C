@@ -26,9 +26,9 @@ void addToList(tipoToken** list,char* lex, char* sim);
 
 int tratarIdentificador(int index);
 
-void tratarDigito(tipoToken* list);
+int tratarDigito(int index);
 
-void tratarOperador(tipoToken* list);
+void tratarOperador(int index);
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -36,7 +36,7 @@ int main(){
     char line[LINE_LENGTH];
 
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -46,10 +46,14 @@ int main(){
         memset(line, 0, sizeof(line));
     }
 
+    lerChar(0);
 
+    while(list != NULL)
+    {
+        printf ("simbolo: %s \t\t\t lexema: %s \n", list->Simbolo, list->lexema);
+        list = list->next;
+    }
 
-
-    //ler (passar pro pr�ximo e colocar em c)
 
 
          fclose(arquivo);
@@ -81,8 +85,8 @@ void addToList(tipoToken** list,char* lex, char* sim){
 }
 
 int tratarIdentificador(int index){
-    char ID[30];
-    char palavrasReservadas[][20] = { "programa",
+    char ID[30] = {0};
+    char palavrasReservadas[][20] = { "programa", //
                                     "se",
                                     "entao",
                                     "senao",
@@ -92,32 +96,36 @@ int tratarIdentificador(int index){
                                     "fim",
                                     "escreva",
                                     "leia",
-                                    "var",
-                                    "inteiro",
+                                    "var",      //
+                                    "inteiro",  //
                                     "booleano",
                                     "verdadeiro",
                                     "falso",
                                     "procedimento",
-                                    "funcao",
+                                    "funcao",   //
                                     "div",
                                     "e",
                                     "ou",
                                     "nao"};
-    char* s = "s";
-    char c;
-
+    char s[2];
+    s[1] = '\0';
+    s[0] = 's';
+    char cs[2];
+    cs[1] = '\0';
+    cs [0] = text[index];
     do{
-        strcat( ID, text[index] );
+        strcat( ID, cs);
         index++;
-        c = text[index];
-
-    }while ((c >= 65 && c <=90) || (c >= 97 && c <= 122) || (c >=48 && c <= 57) || c == '_');
-
+        cs[0] = text[index];
+    }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
+    char* IDfim;
+    strcpy(IDfim, ID);
     for (int I = 0; I < 21; I++)
     {
+
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
-            strcat(s, palavrasReservadas[I]);
+            strcat(s, ID);
             addToList(&list, ID, s);
             return index;
         }
@@ -126,22 +134,27 @@ int tratarIdentificador(int index){
     return index;
 }
 
-void tratarDigito(tipoToken* list){
-    char* ID;
-    char c;
-    while(c >=48 && c <= 57)
-    {
-        /*
-        coloca em ID;
-        ler;
-        */
+int tratarDigito(int index){
+    char ID[30];
+   char cs[2];
+    cs[1] = '\0';
+    cs [0] = text[index];
+    do{
+
+        strcat( ID, cs);
+        index++;
+        cs[0] = text[index];
     }
+    while(cs[0] >=48 && cs[0] <= 57);
     addToList(&list, ID, "snumero");
+    return index;
 }
 
-void tratarOperador(tipoToken* list){
-    char c;
-    switch(c){
+void tratarOperador(int index){
+    char c[2];
+    c[1] = '\0';
+    c[0] = text[index];
+    switch(c[0]){
         case ':': addToList(&list, c, "sdoispontos"); break;
         case '+': addToList(&list, c, "smais"); break;
         case '-': addToList(&list, c, "smenos"); break;
@@ -155,19 +168,35 @@ void tratarOperador(tipoToken* list){
         case '(': addToList(&list, c, "sabre_parenteses"); break;
         case ')': addToList(&list, c, "sfecha_parenteses"); break;
         case '.': addToList(&list, c, "sponto"); break;
-        default: printf("Erro, Operador %c não identificado", c); break;
+        default: printf("Erro, Operador %c não identificado \n", c); break;
     }
 }
 
 void lerChar(int index){
     char c = text[index];
 
-
-    if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
-        index = tratarIdentificador(index);
-    else if (c >=48 && c <= 57)
-        tratarDigito(list);
-    else if (c != 32)
-        tratarOperador(list);
-
+    while (c != 0)
+    {
+        if (c == '{')
+        {
+            while (c!= '}' && c != 0)
+            {
+                index++;
+                c = text[index];
+            }
+            index++;
+            c = text[index];
+        } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
+            index = tratarIdentificador(index);
+        else if (c >=48 && c <= 57)
+            index =tratarDigito(index);
+        else if (c == 32 || c == 10 || c == 13)
+            index++;
+        else
+        {
+            tratarOperador(index);
+            index++;
+        }
+        c = text[index];
+    }
 }
