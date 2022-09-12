@@ -4,14 +4,19 @@
 
 #define LINE_LENGTH 255
 
-/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* STRUCT *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
- FILE *arquivo;
 typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
     struct tipoToken *next;
 }tipoToken;
+
+char text[2048];
+
+FILE *arquivo;
+
+tipoToken* list = NULL;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÇALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -19,7 +24,7 @@ tipoToken *createToken(char* lex, char* sim);
 
 void addToList(tipoToken** list,char* lex, char* sim);
 
-void tratarIdentificador(tipoToken* list);
+int tratarIdentificador(int index);
 
 void tratarDigito(tipoToken* list);
 
@@ -28,9 +33,7 @@ void tratarOperador(tipoToken* list);
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
-    tipoToken* list = NULL;
     char line[LINE_LENGTH];
-    char text[2048];
 
     //O endereço deve ser alterado para o adequado SEMPRE
     arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
@@ -44,21 +47,11 @@ int main(){
     }
 
 
+
+
     //ler (passar pro pr�ximo e colocar em c)
 
 
-   /* while ((c = fgetc(arquivo)) != EOF)
-     {
-        printf("%c",c);
-        if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
-            tratarIdentificador(list);
-        else if (c >=48 && c <= 57)
-            tratarDigito(list);
-        else if (c != 32)
-            tratarOperador(list);
-        //else
-            //ler
-    }*/
          fclose(arquivo);
         return 0;
 }
@@ -87,8 +80,8 @@ void addToList(tipoToken** list,char* lex, char* sim){
 
 }
 
-void tratarIdentificador(tipoToken* list){
-    char* ID;
+int tratarIdentificador(int index){
+    char ID[30];
     char palavrasReservadas[][20] = { "programa",
                                     "se",
                                     "entao",
@@ -113,25 +106,24 @@ void tratarIdentificador(tipoToken* list){
     char* s = "s";
     char c;
 
-    while ((c >= 65 && c <=90) || (c >= 97 && c <= 122) || (c >=48 && c <= 57) || c == '_')
-    {
-        /*
-        coloca em ID
-        ler;
-        */
-    }
+    do{
+        strcat( ID, text[index] );
+        index++;
+        c = text[index];
 
+    }while ((c >= 65 && c <=90) || (c >= 97 && c <= 122) || (c >=48 && c <= 57) || c == '_');
 
     for (int I = 0; I < 21; I++)
     {
-        if ( strcmp(ID,palavrasReservadas[I]))
+        if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, palavrasReservadas[I]);
             addToList(&list, ID, s);
-            return;
+            return index;
         }
     }
     addToList(&list, ID, "sidentificador");
+    return index;
 }
 
 void tratarDigito(tipoToken* list){
@@ -165,4 +157,17 @@ void tratarOperador(tipoToken* list){
         case '.': addToList(&list, c, "sponto"); break;
         default: printf("Erro, Operador %c não identificado", c); break;
     }
+}
+
+void lerChar(int index){
+    char c = text[index];
+
+
+    if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
+        index = tratarIdentificador(index);
+    else if (c >=48 && c <= 57)
+        tratarDigito(list);
+    else if (c != 32)
+        tratarOperador(list);
+
 }
