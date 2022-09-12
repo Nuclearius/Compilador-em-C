@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LINE_LENGTH 255
+
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* STRUCT *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
  FILE *arquivo;
@@ -27,15 +29,27 @@ void tratarOperador(tipoToken* list);
 
 int main(){
     tipoToken* list = NULL;
-    if(!(arquivo=fopen("gera1.txt ","r"))) {
+    char line[LINE_LENGTH];
+    char text[2048];
+
+    //O endereço deve ser alterado para o adequado SEMPRE
+    arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
+    if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
     }
-    //ler (passar pro pr�ximo e colocar em c)
-    char c;
+    while(fgets(line,LINE_LENGTH,arquivo)){
+        strcat(text, line);
+        memset(line, 0, sizeof(line));
+    }
 
-    while (c != 0)
+
+    //ler (passar pro pr�ximo e colocar em c)
+
+
+   /* while ((c = fgetc(arquivo)) != EOF)
      {
+        printf("%c",c);
         if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             tratarIdentificador(list);
         else if (c >=48 && c <= 57)
@@ -44,7 +58,7 @@ int main(){
             tratarOperador(list);
         //else
             //ler
-    }
+    }*/
          fclose(arquivo);
         return 0;
 }
