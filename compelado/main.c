@@ -22,7 +22,7 @@ tipoToken* list = NULL;
 
 tipoToken *createToken(char* lex, char* sim);
 
-void addToList(tipoToken** list,char* lex, char* sim);
+void addToList(char* lex, char* sim);
 
 int tratarIdentificador(int index);
 
@@ -30,13 +30,15 @@ int tratarDigito(int index);
 
 void tratarOperador(int index);
 
+void lerChar(int index);
+
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
     char line[LINE_LENGTH];
 
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -54,8 +56,6 @@ int main(){
         list = list->next;
     }
 
-
-
          fclose(arquivo);
         return 0;
 }
@@ -72,16 +72,14 @@ tipoToken *createToken(char* lex, char* sim){
     return newToken;
 }
 
-void addToList(tipoToken** list,char* lex, char* sim){
-    if (*list == NULL)
-    {
-        *list = createToken(lex,sim);
-    }
-    else
-    {
-        addToList(&(*list)->next, lex, sim);
-    }
+void addToList(char* lex, char* sim){
 
+    tipoToken *auxlist = list;
+
+    while (list != NULL)
+        list = list->next;
+    list = createToken(lex,sim);
+    list = auxlist;
 }
 
 int tratarIdentificador(int index){
@@ -107,8 +105,7 @@ int tratarIdentificador(int index){
                                     "e",
                                     "ou",
                                     "nao"};
-    char s[2];
-    s[1] = '\0';
+    char s[30] = {0};
     s[0] = 's';
     char cs[2];
     cs[1] = '\0';
@@ -118,7 +115,7 @@ int tratarIdentificador(int index){
         index++;
         cs[0] = text[index];
     }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
-    char* IDfim;
+    char IDfim[30];
     strcpy(IDfim, ID);
     for (int I = 0; I < 21; I++)
     {
@@ -126,11 +123,11 @@ int tratarIdentificador(int index){
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
-            addToList(&list, ID, s);
+            addToList(ID, s);
             return index;
         }
     }
-    addToList(&list, ID, "sidentificador");
+    addToList(ID, "sidentificador");
     return index;
 }
 
@@ -146,7 +143,7 @@ int tratarDigito(int index){
         cs[0] = text[index];
     }
     while(cs[0] >=48 && cs[0] <= 57);
-    addToList(&list, ID, "snumero");
+    addToList(ID, "snumero");
     return index;
 }
 
@@ -155,20 +152,20 @@ void tratarOperador(int index){
     c[1] = '\0';
     c[0] = text[index];
     switch(c[0]){
-        case ':': addToList(&list, c, "sdoispontos"); break;
-        case '+': addToList(&list, c, "smais"); break;
-        case '-': addToList(&list, c, "smenos"); break;
-        case '*': addToList(&list, c, "smult"); break;
-        case '!': addToList(&list, c, "s"); break;
-        case '<': addToList(&list, c, "smenor"); break;
-        case '>': addToList(&list, c, "smaior"); break;
-        case '=': addToList(&list, c, "sig"); break;
-        case ';': addToList(&list, c, "sponto_virgula"); break;
-        case ',': addToList(&list, c, "svirgula"); break;
-        case '(': addToList(&list, c, "sabre_parenteses"); break;
-        case ')': addToList(&list, c, "sfecha_parenteses"); break;
-        case '.': addToList(&list, c, "sponto"); break;
-        default: printf("Erro, Operador %c não identificado \n", c); break;
+        case ':': addToList(c, "sdoispontos"); break;
+        case '+': addToList(c, "smais"); break;
+        case '-': addToList(c, "smenos"); break;
+        case '*': addToList(c, "smult"); break;
+        case '!': addToList(c, "s"); break;
+        case '<': addToList(c, "smenor"); break;
+        case '>': addToList(c, "smaior"); break;
+        case '=': addToList(c, "sig"); break;
+        case ';': addToList(c, "sponto_virgula"); break;
+        case ',': addToList(c, "svirgula"); break;
+        case '(': addToList(c, "sabre_parenteses"); break;
+        case ')': addToList(c, "sfecha_parenteses"); break;
+        case '.': addToList(c, "sponto"); break;
+        default: printf("Erro, Operador %c não identificado \n", c[0]); break;
     }
 }
 
@@ -185,7 +182,6 @@ void lerChar(int index){
                 c = text[index];
             }
             index++;
-            c = text[index];
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             index = tratarIdentificador(index);
         else if (c >=48 && c <= 57)
