@@ -36,7 +36,7 @@ int main(){
     char line[LINE_LENGTH];
 
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/teste_2a.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -48,11 +48,7 @@ int main(){
 
     lerChar(0);
 
-    while(list != NULL)
-    {
-        printf ("simbolo: %s \t\t\t lexema: %s \n", list->Simbolo, list->lexema);
-        list = list->next;
-    }
+    printList(&list);
 
 
 
@@ -63,11 +59,12 @@ int main(){
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* FUNÇÕES *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 tipoToken *createToken(char* lex, char* sim){
+
     tipoToken *newToken = malloc(sizeof(tipoToken));
     newToken->lexema = malloc(strlen(lex));
-    newToken->lexema = lex;
+    strcpy(newToken->lexema, lex);
     newToken->Simbolo = malloc(strlen(sim));
-    newToken->Simbolo = sim;
+    strcpy(newToken->Simbolo,sim);
     newToken->next = NULL;
     return newToken;
 }
@@ -84,9 +81,20 @@ void addToList(tipoToken** list,char* lex, char* sim){
 
 }
 
+void printList(tipoToken** list)
+{
+    printf("simbolo\t\t\tlexema\n");
+    while(*list != NULL)
+    {
+        printf ("%s\t\t\t%s \n", (*list)->Simbolo, (*list)->lexema);
+        *list = (*list)->next;
+    }
+
+}
+
 int tratarIdentificador(int index){
     char ID[30] = {0};
-    char palavrasReservadas[][20] = { "programa", //
+    char palavrasReservadas[][20] = { "programa",
                                     "se",
                                     "entao",
                                     "senao",
@@ -96,21 +104,21 @@ int tratarIdentificador(int index){
                                     "fim",
                                     "escreva",
                                     "leia",
-                                    "var",      //
-                                    "inteiro",  //
+                                    "var",
+                                    "inteiro",
                                     "booleano",
                                     "verdadeiro",
                                     "falso",
                                     "procedimento",
-                                    "funcao",   //
+                                    "funcao",
                                     "div",
                                     "e",
                                     "ou",
                                     "nao"};
-    char s[2];
+    char s[20] = {0};
     s[1] = '\0';
     s[0] = 's';
-    char cs[2];
+    char cs[2] = {0};
     cs[1] = '\0';
     cs [0] = text[index];
     do{
@@ -118,8 +126,7 @@ int tratarIdentificador(int index){
         index++;
         cs[0] = text[index];
     }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
-    char* IDfim;
-    strcpy(IDfim, ID);
+
     for (int I = 0; I < 21; I++)
     {
 
@@ -135,7 +142,7 @@ int tratarIdentificador(int index){
 }
 
 int tratarDigito(int index){
-    char ID[30];
+    char ID[30]={0};
    char cs[2];
     cs[1] = '\0';
     cs [0] = text[index];
@@ -168,7 +175,7 @@ void tratarOperador(int index){
         case '(': addToList(&list, c, "sabre_parenteses"); break;
         case ')': addToList(&list, c, "sfecha_parenteses"); break;
         case '.': addToList(&list, c, "sponto"); break;
-        default: printf("Erro, Operador %c não identificado \n", c); break;
+        default: printf("Erro, Operador %s nao identificado \n", c); break;
     }
 }
 
