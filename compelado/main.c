@@ -28,7 +28,7 @@ int tratarIdentificador(int index);
 
 int tratarDigito(int index);
 
-void tratarOperador(int index);
+int tratarOperador(int index);
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -143,7 +143,7 @@ int tratarIdentificador(int index){
 
 int tratarDigito(int index){
     char ID[30]={0};
-   char cs[2];
+    char cs[2];
     cs[1] = '\0';
     cs [0] = text[index];
     do{
@@ -157,26 +157,61 @@ int tratarDigito(int index){
     return index;
 }
 
-void tratarOperador(int index){
+int tratarOperador(int index){
+    char ID[30] = {0};
     char c[2];
     c[1] = '\0';
     c[0] = text[index];
+    index++;
     switch(c[0]){
-        case ':': addToList(&list, c, "sdoispontos"); break;
         case '+': addToList(&list, c, "smais"); break;
         case '-': addToList(&list, c, "smenos"); break;
         case '*': addToList(&list, c, "smult"); break;
-        case '!': addToList(&list, c, "s"); break;
-        case '<': addToList(&list, c, "smenor"); break;
-        case '>': addToList(&list, c, "smaior"); break;
-        case '=': addToList(&list, c, "sig"); break;
         case ';': addToList(&list, c, "sponto_virgula"); break;
         case ',': addToList(&list, c, "svirgula"); break;
+        case '.': addToList(&list, c, "sponto"); break;
         case '(': addToList(&list, c, "sabre_parenteses"); break;
         case ')': addToList(&list, c, "sfecha_parenteses"); break;
-        case '.': addToList(&list, c, "sponto"); break;
+        case '=': addToList(&list, c, "sig"); break;
+        case '!':
+            if (text[index] != '=')
+                printf("Erro, caractere %s nao esperado, esperava \"=\"\n", text[index]);
+            else
+                {
+                    index++;
+                    addToList(&list, "!=", "sdif");
+                }
+            break;
+        case ':':
+            if (text[index] != '=')
+                addToList(&list, c, "sdoispontos");
+            else
+                {
+                    index++;
+                    addToList(&list, ":=", "satribuicao");
+                }
+            break;
+        case '<':
+            if (text[index] != '=')
+                addToList(&list, c, "smenor");
+            else
+                {
+                    index++;
+                    addToList(&list, "<=", "smenorig");
+                }
+            break;
+        case '>':
+            if (text[index] != '=')
+                addToList(&list, c, "smaior");
+            else
+            {
+                index++;
+                addToList(&list, ">=", "smaiorig");
+            }
+            break;
         default: printf("Erro, Operador %s nao identificado \n", c); break;
     }
+    return index;
 }
 
 void lerChar(int index){
@@ -200,10 +235,7 @@ void lerChar(int index){
         else if (c == 32 || c == 10 || c == 13)
             index++;
         else
-        {
-            tratarOperador(index);
-            index++;
-        }
+            index = tratarOperador(index);
         c = text[index];
     }
 }
