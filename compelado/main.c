@@ -36,7 +36,7 @@ int main(){
     char line[LINE_LENGTH];
 
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/teste_2a.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/teste_7.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -239,3 +239,265 @@ void lerChar(int index){
         c = text[index];
     }
 }
+
+
+void sintatico()
+{
+    if (strcmp(list->Simbolo, "sprograma") == 0)
+        list = list->next;
+    else return;//erro
+    if (strcmp(list->Simbolo, "sidentificador") == 0)
+        list = list->next;
+    else return;//erro
+    if (strcmp(list->Simbolo, "sponto_virgula") == 0)
+        list = list->next;
+    else return;//erro ponto_virg
+
+    analisa_bloco();
+}
+
+void analisa_bloco()
+{
+    et_analisa_var();
+    analisa_subrotina();
+    analisa_comandos();
+}
+
+
+void et_analisa_var()
+{
+   if(strcmp(List->Simbolo,"svar")== 0)
+        List=List->next;
+        else return;
+       do{
+       if(strcmp(list->Simbolo,"sidentificador")== 0)
+        analisa_var();
+        List=List->next;
+        else return;
+        if(strcmp(list->Simbolo,"sponto_virgula")== 0)
+            else return;//erro
+       }while
+       printf("erro");
+
+
+
+}
+
+void analisa_var()
+{
+    do{
+        if(strcmp(list->Simbolo,"sidentificador")== 0)
+           list=list->next;
+            else return;
+
+                if(strcmp(list->Simbolo,"svirgula")== 0)|| (strcmp(list->Simbolo,"sdoispontos")== 0)
+
+                    if (strcmp(list->Simbolo,"svirgula")== 0){
+
+                        list=list->next;}
+
+                    if (strcmp(list->Simbolo,"sdoispontos")== 0)
+                        printf("erro");
+                    else return;//erro
+
+
+
+        }while  ((strcmp(list->Simbolo,"svirgula")== 0))
+    list=list->next;
+    analisa_tipo();
+}
+
+void analisa_tipo()
+{
+    if (strcmp(list->Simbolo,"sinteiro")!=0)&& (strcmp(list->Simbolo,"sbooleano")!=0)
+    else return;//erro
+    list=list->next;
+
+}
+
+void analisa_comandos()
+{
+    if (strcmp(list->Simbolo, "sinicio") == 0)
+        list = list->next;
+    else return; //erro
+    analisa_comando_simples();
+    while(strcmp(list->Simbolo,"sfim") != 0)
+    {
+        if (strcmp(list->Simbolo, "sponto_virgula") == 0)
+        {
+            list = list->next;
+            if (strcmp(list->Simbolo,"sfim") != 0)
+                analisa_comando_simples();
+        } else return; //erro
+    }
+    //lexico(token)
+
+}
+
+void analisa_comando_simples()
+{
+    if (strcmp(list->Simbolo, "sidentificador") == 0)
+        analisa_atrib_chprocedimento();
+    else if (strcmp(list->Simbolo, "sse") == 0)
+        analisa_se();
+    else if (strcmp(list->Simbolo, "senquanto") == 0)
+        analisa_enquanto();
+    else if (strcmp(list->Simbolo, "sleia") == 0)
+        analisa_leia();
+    else if (strcmp(list->Simbolo, "sesceva") == 0)
+        analisa_escreva();
+    else analisa_comandos();
+
+}
+
+void analisa_atrib_chprocedimento()
+{
+    list=list->next;
+    if (strcmp(list->Simbolo, "satribuicao") == 0)
+        analisa_atribuicao();
+    else chamada_procedimento();
+
+}
+
+void analisa_atribuicao()
+{
+
+}
+
+void chamada_procedimento()
+{
+
+}
+
+void analisa_leia()
+{
+    list = list->next;
+    if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
+        list=list->next;
+    else return;//erro
+    if (strcmp(list->Simbolo, "sidentficador") == 0)
+        list=list->next;
+    else return;//erro
+    //random sintatic shit
+    if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
+        list=list->next;
+    else return;//erro
+}
+
+void analisa_escreva()
+{
+    list = list->next;
+    if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
+        list=list->next;
+    else return;//erro
+    if (strcmp(list->Simbolo, "sidentficador") == 0)
+        list=list->next;
+    else return;//erro
+    //random sintatic shit
+    if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
+        list=list->next;
+    else return;//erro
+}
+
+void analisa_enquanto()
+{
+    list = list->next;
+    analisa_expressao();
+    if (strcmp(list->Simbolo, "sfaca") == 0)
+        list=list->next;
+    else return; //erro
+    analisa_comando_simples();
+}
+
+void analisa_se()
+{
+    list = list->next;
+    analisa_expressao();
+    if (strcmp(list->Simbolo, "sentao") == 0)
+        list=list->next;
+    else return; //erro
+    analisa_comando_simples();
+    if (strcmp(list->Simbolo, "ssenao") == 0)
+    {
+        list=list->next;
+        analisa_comando_simples();
+    }
+}
+
+void analisa_expressao()
+{
+    analisa_expressao_simples();
+    if (strcmp(list->Simbolo, "smaior") == 0 || strcmp(list->Simbolo, "smaiorig") == 0 || strcmp(list->Simbolo, "sig") == 0 || strcmp(list->Simbolo, "smenor") == 0 || strcmp(list->Simbolo, "smenorig") == 0 || strcmp(list->Simbolo, "sdif") == 0 )
+    {
+         list=list->next;
+         analisa_expressao_simples();
+    }
+}
+
+void analisa_expressao_simples()
+{
+    if(strcmp(list->Simbolo, "smais") == 0 || strcmp(list->Simbolo, "smenos") == 0)
+        list = list->next;
+    analisa_termo();
+    while(strcmp(list->Simbolo, "smais") == 0 || strcmp(list->Simbolo, "smenos") == 0 || strcmp(list->Simbolo, "sou") == 0)
+    {
+        list=list->next;
+        analisa_termo;
+    }
+}
+
+void analisa_termo()
+{
+    analisa_fator();
+    while(strcmp(list->Simbolo, "smult") == 0 || strcmp(list->Simbolo, "sdiv") == 0 || strcmp(list->Simbolo, "se") == 0)
+    {
+        list = list->next;
+        analisa_fator();
+    }
+}
+
+void analisa_fator()
+{
+
+}
+
+void analisa_subrotinas()
+{
+    while(strcmp(list->Simbolo,"sprocedimento")==0)|| (strcmp(list->Simbolo,"sfuncao")==0)
+        if((strcmp(list->Simbolo,"sprocedimento")==0))
+        analisa_declaracao_procedimento();
+    else analisa_declaracao_funcao();
+    if(strcmp(list->Simbolo,"spontovirgula")==0)
+        list=list->next;
+    else return;//erro
+
+
+}
+void analisa_declaracao_procedimento();
+{
+    list=list->next;
+    if(strcmp(list->Simbolo,"sidentificador")==0){
+        list=list->next;
+            if(strcmp(list->Simbolo,"sponto_virgula")==0)
+                analisa_bloco();
+            else return;//erro
+    }
+    else return;//erro
+
+}
+void analisa_declaracao_procedimento();{
+
+list=list->next;
+    if(strcmp(list->Simbolo,"sidentificador")==0){
+        list=list->next;
+            if(strcmp(list->Simbolo,"sdoispontos")==0){
+                list=list->next;
+                    if(strcmp(list->Simbolo,"sinteiro")==0) || (strcmp(list->Simbolo,"sbooleano")==0){
+                        list=list->next;
+                       if(strcmp(list->Simbolo,"sidentificador")==0)
+                        analisa_bloco();
+            }
+        }else return;//erro
+    }else return;//erro
+}else return;//erro
+
