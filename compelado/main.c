@@ -364,11 +364,6 @@ void analisa_atribuicao()
 
 }
 
-void chamada_procedimento()
-{
-
-}
-
 void analisa_leia()
 {
     list = list->next;
@@ -458,6 +453,34 @@ void analisa_termo()
 
 void analisa_fator()
 {
+    if (strcmp(list->Simbolo, "sidentificador") == 0)
+    {
+        analisa_chamada_funcao();
+    } else if (strcmp(list->Simbolo, "snumero") == 0)
+    {
+        list = list->next;
+    } else if (strcmp(list->Simbolo, "snao") == 0)
+    {
+        list = list->next;
+        analisa_fator();
+    } else if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
+    {
+        list = list->next;
+        analisa_expressao();
+        if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
+            list = list->next;
+        else return; //erro
+    } else if (strcmp(list->Simbolo, "sverdadeiro") == 0 || strcmp(list->Simbolo, "sfalso") == 0)
+        list = list->next;
+    else return;//erro
+}
+
+void chamada_procedimento()
+{
+
+}
+void analisa_chamada_funcao()
+{
 
 }
 
@@ -485,8 +508,7 @@ void analisa_declaracao_procedimento();
     else return;//erro
 
 }
-void analisa_declaracao_procedimento();{
-
+void analisa_declaracao_procedimento(){
 list=list->next;
     if(strcmp(list->Simbolo,"sidentificador")==0){
         list=list->next;
