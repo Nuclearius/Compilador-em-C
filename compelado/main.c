@@ -36,9 +36,9 @@ int main(){
     char line[LINE_LENGTH];
 
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint6.txt","r");
     if(arquivo == NULL) {
-        printf("\terro");
+        printf("ERRO");
         exit(1);
     }
     while(fgets(line,LINE_LENGTH,arquivo)){
@@ -272,20 +272,19 @@ void analisa_bloco(){
 void et_analisa_var(){
     printf("\n[et_analisa_var]\n");
     if(strcmp(list->Simbolo,"svar")== 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else  {printf("\terro em %s, \"var\" esperado\n", list->lexema);return;} //\terro
-            if(strcmp(list->Simbolo,"sidentificador")== 0)
+    {list = list->next; printf("\n %s ", list->lexema);//\terro
+        if(strcmp(list->Simbolo,"sidentificador")== 0)
+        {
+            while(strcmp(list->Simbolo,"sidentificador")== 0)
             {
-                while(strcmp(list->Simbolo,"sidentificador")== 0)
-                {
-                    analisa_var();
-                    if (strcmp(list->Simbolo,"sponto_virgula")== 0)
-                        {list = list->next; printf("\n %s ", list->lexema);}
-                    else  {printf("\terro em %s, \";\" esperado\n", list->lexema);return;} //\terro ; esperado
-                }
+                analisa_var();
+                if (strcmp(list->Simbolo,"sponto_virgula")== 0)
+                    {list = list->next; printf("\n %s ", list->lexema);}
+                else  {printf("\terro em %s, \";\" esperado\n", list->lexema);return;} //\terro ; esperado
             }
-            else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}// \terro falta identificador
-    printf("\n[et_analisa_var end]\n");
+        }else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}// \terro falta identificador
+        printf("\n[et_analisa_var end]\n");
+    }
 }
 
 void analisa_var(){
@@ -361,21 +360,27 @@ void analisa_comando_simples(){
 
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
+    /*
     list = list->next;
     printf("\n %s ", list->lexema);
-    if (strcmp(list->Simbolo, "satribuicao") == 0)
+    */
+    if (strcmp(list->next->Simbolo, "satribuicao") == 0)
+    {
+        list = list->next;
+        printf("\n %s ", list->lexema);
         analisa_atribuicao();
+    }
     else analisa_chamada_procedimento();
     printf("\n[analisa_atrib_chprocedimento end]\n");
 }
 
 void analisa_atribuicao(){
-    printf("\n[atribuicao]\n");
+    printf("\n[analisa_atribuicao]\n");
     list = list->next;
     printf("\n %s ", list->lexema);
     //semantic shit
     analisa_expressao();
-    printf("\n[atribuicao end]\n");
+    printf("\n[analisa_atribuicao end]\n");
 }
 
 void analisa_leia(){
@@ -511,9 +516,8 @@ void analisa_fator(){
 void analisa_chamada_procedimento(){
     printf("\n[analisa_chamada_procedimento]\n");
     //semantic shiet
-    if(strcmp(list->Simbolo,"sponto_virgula")==0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \";\" esperado\n", list->lexema);return;} //\terro,; esperado
+    list = list->next;
+    printf("\n %s ", list->lexema);
     printf("\n[analisa_chamada_procedimento end]\n");
 }
 void analisa_chamada_funcao(){
@@ -532,7 +536,7 @@ void analisa_subrotinas()
         if(strcmp(list->Simbolo,"sprocedimento")==0)
             analisa_declaracao_procedimento();
         else analisa_declaracao_funcao();
-        if(strcmp(list->Simbolo,"spontovirgula")==0)
+        if(strcmp(list->Simbolo,"sponto_virgula")==0)
             {list = list->next; printf("\n %s ", list->lexema);}
         else {printf("\terro em %s, \";\" esperado\n", list->lexema);return;}//\terro, ; esperado
     }
