@@ -34,9 +34,8 @@ int tratarOperador(int index);
 
 int main(){
     char line[LINE_LENGTH];
-
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint6.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint6.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -47,13 +46,20 @@ int main(){
     }
 
     lerChar(0);
-
+    tipoToken* head = list;
     //printList(&list);
     sintatico();
     printf("\nanalise sintatica concluida\n");
 
-         fclose(arquivo);
-        return 0;
+    tipoToken* tmp;
+    while (head != NULL)
+    {
+        tmp = head;
+        head = head->next;
+        free(head);
+    }
+    fclose(arquivo);
+    return 0;
 }
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* FUNÇÕES *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
