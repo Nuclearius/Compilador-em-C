@@ -22,7 +22,7 @@ tipoToken* list = NULL;
 
 tipoToken *createToken(char* lex, char* sim);
 
-void addToList(char* lex, char* sim);
+void addToList(tipoToken** list,char* lex, char* sim);
 
 int tratarIdentificador(int index);
 
@@ -30,16 +30,13 @@ int tratarDigito(int index);
 
 int tratarOperador(int index);
 
-void lerChar(int index);
-
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
-    //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -63,10 +60,8 @@ int main(){
         free(tmp->Simbolo);
         free(tmp);
     }
-
     fclose(arquivo);
     return 0;
-
 }
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* FUNÇÕES *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -82,14 +77,16 @@ tipoToken *createToken(char* lex, char* sim){
     return newToken;
 }
 
-void addToList(char* lex, char* sim){
+void addToList(tipoToken** list,char* lex, char* sim){
+    if (*list == NULL)
+    {
+        *list = createToken(lex,sim);
+    }
+    else
+    {
+        addToList(&(*list)->next, lex, sim);
+    }
 
-    tipoToken *auxlist = list;
-
-    while (list != NULL)
-        list = list->next;
-    list = createToken(lex,sim);
-    list = auxlist;
 }
 
 void printList(tipoToken** list){
@@ -143,11 +140,11 @@ int tratarIdentificador(int index){
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
-            addToList(ID, s);
+            addToList(&list, ID, s);
             return index;
         }
     }
-    addToList(ID, "sidentificador");
+    addToList(&list, ID, "sidentificador");
     return index;
 }
 
@@ -163,7 +160,7 @@ int tratarDigito(int index){
         cs[0] = text[index];
     }
     while(cs[0] >=48 && cs[0] <= 57);
-    addToList(ID, "snumero");
+    addToList(&list, ID, "snumero");
     return index;
 }
 
@@ -236,6 +233,7 @@ void lerChar(int index){
                 c = text[index];
             }
             index++;
+            c = text[index];
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             index = tratarIdentificador(index);
         else if (c >=48 && c <= 57)
