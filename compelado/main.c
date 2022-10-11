@@ -35,7 +35,7 @@ int tratarOperador(int index);
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint6.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -44,7 +44,6 @@ int main(){
         strcat(text, line);
         memset(line, 0, sizeof(line));
     }
-
     lerChar(0);
     tipoToken* head = list;
     //printList(&list);
@@ -56,7 +55,9 @@ int main(){
     {
         tmp = head;
         head = head->next;
-        free(head);
+        free(tmp->lexema);
+        free(tmp->Simbolo);
+        free(tmp);
     }
     fclose(arquivo);
     return 0;
