@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define LINE_LENGTH 255
 
@@ -11,6 +12,17 @@ typedef struct tipoToken{
     char* Simbolo;
     struct tipoToken *next;
 }tipoToken;
+
+typedef struct noSimbolo{
+    char* tipo;
+    char* simbolo;
+    int escopo;
+}noSimbolo;
+
+typedef struct tabelaSimbolos{
+    struct tabelaSimbolos *prev;
+    noSimbolo simbolo;
+};
 
 char text[2048];
 
@@ -24,11 +36,59 @@ tipoToken *createToken(char* lex, char* sim);
 
 void addToList(tipoToken** list,char* lex, char* sim);
 
+void printList(tipoToken** list);
+
 int tratarIdentificador(int index);
 
 int tratarDigito(int index);
 
 int tratarOperador(int index);
+
+void lerChar(int index);
+
+void sintatico();
+
+void analisa_bloco();
+
+void et_analisa_var();
+
+void analisa_var();
+
+void analisa_tipo();
+
+void analisa_comandos();
+
+void analisa_comando_simples();
+
+void analisa_atrib_chprocedimento();
+
+void analisa_atribuicao();
+
+void analisa_leia();
+
+void analisa_escreva();
+
+void analisa_enquanto();
+
+void analisa_se();
+
+void analisa_expressao();
+
+void analisa_expressao_simples();
+
+void analisa_termo();
+
+void analisa_fator();
+
+void analisa_chamada_procedimento();
+
+void analisa_chamada_funcao();
+
+void analisa_subrotinas();
+
+void analisa_declaracao_procedimento();
+
+void analisa_declaracao_funcao();
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -246,7 +306,6 @@ void lerChar(int index){
     }
 }
 
-
 void sintatico(){
     printf("\n[sintatico]\n");
     if (strcmp(list->Simbolo, "sprograma") == 0)
@@ -275,7 +334,6 @@ void analisa_bloco(){
     analisa_comandos();
     printf("\n[analisa_bloco end]\n");
 }
-
 
 void et_analisa_var(){
     printf("\n[et_analisa_var]\n");
@@ -528,6 +586,7 @@ void analisa_chamada_procedimento(){
     printf("\n %s ", list->lexema);
     printf("\n[analisa_chamada_procedimento end]\n");
 }
+
 void analisa_chamada_funcao(){
     printf("\n[analisa_chamada_funcao]\n");
     //semantic shiet
@@ -565,6 +624,7 @@ void analisa_declaracao_procedimento(){
     else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro
     printf("\n[analisa_declaracao_procedimento end]\n");
 }
+
 void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao]\n");
     list = list->next;
@@ -586,3 +646,14 @@ void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao end]\n");
 }
 
+void addPilha(){
+
+}
+
+void rmPilha(){
+
+}
+
+bool scanPilha(char* simbolo){
+
+}

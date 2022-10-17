@@ -1,0 +1,3 @@
+/home/luckytods/Github/Compilador-em-C/cmake-build-debug/CMakeFiles/Compilador_em_C.dir
+/home/luckytods/Github/Compilador-em-C/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/luckytods/Github/Compilador-em-C/cmake-build-debug/CMakeFiles/rebuild_cache.dir
