@@ -9,14 +9,16 @@
 typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
-    struct tipoToken *next;
+    //struct tipoToken *next;
 }tipoToken;
 
 char text[2048];
 
 FILE *arquivo;
 
-tipoToken* list = NULL;
+tipoToken* token = NULL;
+
+int index = 0;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÇALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -24,13 +26,13 @@ tipoToken *createToken(char* lex, char* sim);
 
 void addToList(char* lex, char* sim);
 
-int tratarIdentificador(int index);
+void tratarIdentificador();
 
-int tratarDigito(int index);
+void tratarDigito();
 
-int tratarOperador(int index);
+void tratarOperador();
 
-void lerChar(int index);
+void lexico();
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -38,8 +40,12 @@ int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
     arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+<<<<<<< Updated upstream
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
 
+=======
+    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
+>>>>>>> Stashed changes
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -48,12 +54,11 @@ int main(){
         strcat(text, line);
         memset(line, 0, sizeof(line));
     }
-    lerChar(0);
-    tipoToken* head = list;
     //printList(&list);
-    sintatico();
+    analise();
     printf("\nanalise sintatica concluida\n");
 
+<<<<<<< Updated upstream
     tipoToken* tmp;
     while (head != NULL)
     {
@@ -64,6 +69,8 @@ int main(){
         free(tmp);
     }
 
+=======
+>>>>>>> Stashed changes
     fclose(arquivo);
     return 0;
 
@@ -78,10 +85,11 @@ tipoToken *createToken(char* lex, char* sim){
     strcpy(newToken->lexema, lex);
     newToken->Simbolo = malloc(strlen(sim));
     strcpy(newToken->Simbolo,sim);
-    newToken->next = NULL;
+    //newToken->next = NULL;
     return newToken;
 }
 
+<<<<<<< Updated upstream
 void addToList(char* lex, char* sim){
 
     tipoToken *auxlist = list;
@@ -103,6 +111,9 @@ void printList(tipoToken** list){
 }
 
 int tratarIdentificador(int index){
+=======
+void tratarIdentificador(){
+>>>>>>> Stashed changes
     char ID[30] = {0};
     char palavrasReservadas[][20] = { "programa",
                                     "se",
@@ -143,15 +154,22 @@ int tratarIdentificador(int index){
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
+<<<<<<< Updated upstream
             addToList(ID, s);
             return index;
         }
     }
     addToList(ID, "sidentificador");
     return index;
+=======
+            token = createToken( ID, s);
+        }
+    }
+    token = createToken( ID, s);
+>>>>>>> Stashed changes
 }
 
-int tratarDigito(int index){
+void tratarDigito(){
     char ID[30]={0};
     char cs[2];
     cs[1] = '\0';
@@ -163,91 +181,101 @@ int tratarDigito(int index){
         cs[0] = text[index];
     }
     while(cs[0] >=48 && cs[0] <= 57);
+<<<<<<< Updated upstream
     addToList(ID, "snumero");
     return index;
+=======
+    token = createToken( ID, "snumero");
+>>>>>>> Stashed changes
 }
 
-int tratarOperador(int index){
+void tratarOperador(){
     char ID[30] = {0};
     char c[2];
     c[1] = '\0';
     c[0] = text[index];
     index++;
     switch(c[0]){
-        case '+': addToList(&list, c, "smais"); break;
-        case '-': addToList(&list, c, "smenos"); break;
-        case '*': addToList(&list, c, "smult"); break;
-        case ';': addToList(&list, c, "sponto_virgula"); break;
-        case ',': addToList(&list, c, "svirgula"); break;
-        case '.': addToList(&list, c, "sponto"); break;
-        case '(': addToList(&list, c, "sabre_parenteses"); break;
-        case ')': addToList(&list, c, "sfecha_parenteses"); break;
-        case '=': addToList(&list, c, "sig"); break;
+        case '+': token = createToken( c, "smais"); break;
+        case '-': token = createToken( c, "smenos"); break;
+        case '*': token = createToken( c, "smult"); break;
+        case ';': token = createToken( c, "sponto_virgula"); break;
+        case ',': token = createToken( c, "svirgula"); break;
+        case '.': token = createToken( c, "sponto"); break;
+        case '(': token = createToken( c, "sabre_parenteses"); break;
+        case ')': token = createToken( c, "sfecha_parenteses"); break;
+        case '=': token = createToken( c, "sig"); break;
         case '!':
             if (text[index] != '=')
                 printf("\terro, caractere %s nao esperado, esperava \"=\"\n", text[index]);
             else
                 {
                     index++;
-                    addToList(&list, "!=", "sdif");
+                    token = createToken( "!=", "sdif");
+
                 }
             break;
         case ':':
             if (text[index] != '=')
-                addToList(&list, c, "sdoispontos");
+                token = createToken( c, "sdoispontos");
             else
                 {
                     index++;
-                    addToList(&list, ":=", "satribuicao");
+                    token = createToken( ":=", "satribuicao");
                 }
             break;
         case '<':
             if (text[index] != '=')
-                addToList(&list, c, "smenor");
+                token = createToken( c, "smenor");
             else
                 {
                     index++;
-                    addToList(&list, "<=", "smenorig");
+                    token = createToken( "<=", "smenorig");
                 }
             break;
         case '>':
             if (text[index] != '=')
-                addToList(&list, c, "smaior");
+                token = createToken( c, "smaior");
             else
             {
                 index++;
-                addToList(&list, ">=", "smaiorig");
+                token = createToken( ">=", "smaiorig");
             }
             break;
         default: printf("erro, Operador %s nao identificado \n", c); break;
     }
-    return index;
 }
 
-void lerChar(int index){
+void lexico(){
     char c = text[index];
-    while (c != 0)
-    {
-        if (c == '{')
+
+        if (c == 0)
+            token = NULL;
+        else if (c == '{')
         {
             while (c!= '}' && c != 0)
             {
                 index++;
                 c = text[index];
+                if (c == 0)
+                    printf("erro, comentario sem fim\n");
             }
             index++;
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
-            index = tratarIdentificador(index);
+            tratarIdentificador();
         else if (c >=48 && c <= 57)
-            index =tratarDigito(index);
+            tratarDigito();
         else if (c == 32 || c == 10 || c == 13)
+        {
             index++;
+            lexico();
+        }
         else
-            index = tratarOperador(index);
+            tratarOperador();
         c = text[index];
-    }
 }
 
+<<<<<<< Updated upstream
 
 void sintatico(){
     printf("\n[sintatico]\n");
@@ -258,20 +286,34 @@ void sintatico(){
         {list = list->next; printf("\n %s ", list->lexema);}
     else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro falta identificador
     if (strcmp(list->Simbolo, "sponto_virgula") == 0)
+=======
+void analise(){
+    printf("\n[analise]\n");
+    lexico();
+    printf("\nteste: %s", token->lexema);
+    if (strcmp(token->Simbolo, "sprograma") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, \"programa\" esperado\n", token->lexema);return;}//\terro não tem programa
+    if (strcmp(token->Simbolo, "sidentificador") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro falta identificador
+    if (strcmp(token->Simbolo, "sponto_virgula") == 0)
+>>>>>>> Stashed changes
         analisa_bloco();
-    else  {printf("\terro em %s, \";\" esperado\n", list->lexema);return;}//\terro ponto_virg
-    if (strcmp(list->Simbolo, "sponto") == 0)
+    else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro ponto_virg
+    if (strcmp(token->Simbolo, "sponto") == 0)
     {
-        if (list->next == NULL)
+        lexico();
+        if (token == NULL)
             return; // sucesso
-        else {printf("\terro em %s, final de codigo esperado\n", list->lexema);return;}// \terro
-    } else {printf("\terro em %s, \".\" esperado\n", list->lexema);return;} //\terro
+        else {printf("\terro em %s, final de codigo esperado\n", token->lexema);return;}// \terro
+    } else {printf("\terro em %s, \".\" esperado\n", token->lexema);return;} //\terro
 }
 
 void analisa_bloco(){
     printf("\n[analisa_bloco]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     et_analisa_var();
     analisa_subrotinas();
     analisa_comandos();
@@ -281,18 +323,18 @@ void analisa_bloco(){
 
 void et_analisa_var(){
     printf("\n[et_analisa_var]\n");
-    if(strcmp(list->Simbolo,"svar")== 0)
-    {list = list->next; printf("\n %s ", list->lexema);//\terro
-        if(strcmp(list->Simbolo,"sidentificador")== 0)
+    if(strcmp(token->Simbolo,"svar")== 0)
+    {lexico(); printf("\n %s ", token->lexema);//\terro
+        if(strcmp(token->Simbolo,"sidentificador")== 0)
         {
-            while(strcmp(list->Simbolo,"sidentificador")== 0)
+            while(strcmp(token->Simbolo,"sidentificador")== 0)
             {
                 analisa_var();
-                if (strcmp(list->Simbolo,"sponto_virgula")== 0)
-                    {list = list->next; printf("\n %s ", list->lexema);}
-                else  {printf("\terro em %s, \";\" esperado\n", list->lexema);return;} //\terro ; esperado
+                if (strcmp(token->Simbolo,"sponto_virgula")== 0)
+                    {lexico(); printf("\n %s ", token->lexema);}
+                else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;} //\terro ; esperado
             }
-        }else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}// \terro falta identificador
+        }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}// \terro falta identificador
         printf("\n[et_analisa_var end]\n");
     }
 }
@@ -300,69 +342,69 @@ void et_analisa_var(){
 void analisa_var(){
     printf("\n[analisa_var]\n");
     do{
-        if(strcmp(list->Simbolo,"sidentificador")== 0)
-           {list = list->next; printf("\n %s ", list->lexema);}
-        else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}
-        if(strcmp(list->Simbolo,"svirgula")== 0 || strcmp(list->Simbolo,"sdoispontos")== 0)
+        if(strcmp(token->Simbolo,"sidentificador")== 0)
+           {lexico(); printf("\n %s ", token->lexema);}
+        else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}
+        if(strcmp(token->Simbolo,"svirgula")== 0 || strcmp(token->Simbolo,"sdoispontos")== 0)
         {
-            if (strcmp(list->Simbolo,"svirgula")== 0)
+            if (strcmp(token->Simbolo,"svirgula")== 0)
             {
-                list = list->next;
-                printf("\n %s ", list->lexema);
-                printf("\n %s ", list->lexema);
-                if (strcmp(list->Simbolo,"sdoispontos")== 0)
-                    {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro, identificador espserado
+                lexico();
+                printf("\n %s ", token->lexema);
+                printf("\n %s ", token->lexema);
+                if (strcmp(token->Simbolo,"sdoispontos")== 0)
+                    {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro, identificador espserado
             }
-        } else {printf("\terro em %s, \",\" ou \":\" esperado\n", list->lexema);return;} //\terro , ou : esperado
-    }while  (strcmp(list->Simbolo,"sdoispontos") != 0);
-    list = list->next;
-    printf("\n %s ", list->lexema);
+        } else {printf("\terro em %s, \",\" ou \":\" esperado\n", token->lexema);return;} //\terro , ou : esperado
+    }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
+    lexico();
+    printf("\n %s ", token->lexema);
     analisa_tipo();
     printf("\n[analisa_var end]\n");
 }
 
 void analisa_tipo(){
     printf("\n[analisa_tipo]\n");
-    if (strcmp(list->Simbolo,"sinteiro")!=0 && strcmp(list->Simbolo,"sbooleano")!=0)
-        {printf("\terro em %s, tipo nao reconhecido\n", list->lexema);return;}//\terro
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    if (strcmp(token->Simbolo,"sinteiro")!=0 && strcmp(token->Simbolo,"sbooleano")!=0)
+        {printf("\terro em %s, tipo nao reconhecido\n", token->lexema);return;}//\terro
+    lexico();
+    printf("\n %s ", token->lexema);
     printf("\n[analisa_tipo end]\n");
 }
 
 void analisa_comandos(){
     printf("\n[analisa_comandos]\n");
-    if (strcmp(list->Simbolo, "sinicio") != 0)
-     {printf("\terro em %s, inicio esperado\n", list->lexema);return;} //\terro, inicio esperado
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    if (strcmp(token->Simbolo, "sinicio") != 0)
+     {printf("\terro em %s, inicio esperado\n", token->lexema);return;} //\terro, inicio esperado
+    lexico();
+    printf("\n %s ", token->lexema);
     analisa_comando_simples();
-    while(strcmp(list->Simbolo,"sfim") != 0)
+    while(strcmp(token->Simbolo,"sfim") != 0)
     {
-        if (strcmp(list->Simbolo, "sponto_virgula") == 0)
+        if (strcmp(token->Simbolo, "sponto_virgula") == 0)
         {
-            list = list->next;
-            printf("\n %s ", list->lexema);
-            if (strcmp(list->Simbolo,"sfim") != 0)
+            lexico();
+            printf("\n %s ", token->lexema);
+            if (strcmp(token->Simbolo,"sfim") != 0)
                 analisa_comando_simples();
-        } else {printf("\terro em %s, \";\" esperado\n", list->lexema);return;} //\terro ; esperado
+        } else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;} //\terro ; esperado
     }
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     printf("\n[analisa_comandos end]\n");
 }
 
 void analisa_comando_simples(){
     printf("\n[analisa_comando_simples]\n");
-    if (strcmp(list->Simbolo, "sidentificador") == 0)
+    if (strcmp(token->Simbolo, "sidentificador") == 0)
         analisa_atrib_chprocedimento();
-    else if (strcmp(list->Simbolo, "sse") == 0)
+    else if (strcmp(token->Simbolo, "sse") == 0)
         analisa_se();
-    else if (strcmp(list->Simbolo, "senquanto") == 0)
+    else if (strcmp(token->Simbolo, "senquanto") == 0)
         analisa_enquanto();
-    else if (strcmp(list->Simbolo, "sleia") == 0)
+    else if (strcmp(token->Simbolo, "sleia") == 0)
         analisa_leia();
-    else if (strcmp(list->Simbolo, "sescreva") == 0)
+    else if (strcmp(token->Simbolo, "sescreva") == 0)
         analisa_escreva();
     else analisa_comandos();
     printf("\n[analisa_comando_simples end]\n");
@@ -370,14 +412,10 @@ void analisa_comando_simples(){
 
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
-    /*
-    list = list->next;
-    printf("\n %s ", list->lexema);
-    */
-    if (strcmp(list->next->Simbolo, "satribuicao") == 0)
+    lexico();
+    printf("\n %s ", token->lexema);
+    if (strcmp(token->Simbolo, "satribuicao") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
         analisa_atribuicao();
     }
     else analisa_chamada_procedimento();
@@ -386,8 +424,8 @@ void analisa_atrib_chprocedimento(){
 
 void analisa_atribuicao(){
     printf("\n[analisa_atribuicao]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     //semantic shit
     analisa_expressao();
     printf("\n[analisa_atribuicao end]\n");
@@ -395,63 +433,63 @@ void analisa_atribuicao(){
 
 void analisa_leia(){
     printf("\n[analisa_leia]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
-    if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \"(\" esperado\n", list->lexema);return;}//\terro
-    if (strcmp(list->Simbolo, "sidentificador") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro
+    lexico();
+    printf("\n %s ", token->lexema);
+    if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
+    if (strcmp(token->Simbolo, "sidentificador") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     //random semantic shit
-    if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \")\" esperado\n", list->lexema);return;}//\terro
+    if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_leia end]\n");
 }
 
 void analisa_escreva(){
     printf("\n[analisa_escreva]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
-    if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \"(\" esperado\n", list->lexema);return;}//\terro
-    if (strcmp(list->Simbolo, "sidentificador") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro
+    lexico();
+    printf("\n %s ", token->lexema);
+    if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
+    if (strcmp(token->Simbolo, "sidentificador") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     //random semantic shit
-    if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \")\" esperado\n", list->lexema);return;}//\terro
+    if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_escreva end]\n");
 }
 
 void analisa_enquanto(){
     printf("\n[analisa_enquanto]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     analisa_expressao();
-    if (strcmp(list->Simbolo, "sfaca") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, faca esperado\n", list->lexema);return;} //\terro
+    if (strcmp(token->Simbolo, "sfaca") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, faca esperado\n", token->lexema);return;} //\terro
     analisa_comando_simples();
     printf("\n[analisa_enquanto end]\n");
 }
 
 void analisa_se(){
     printf("\n[analisa_se]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     analisa_expressao();
-    if (strcmp(list->Simbolo, "sentao") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, entao esperado\n", list->lexema);return;} //\terro
+    if (strcmp(token->Simbolo, "sentao") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, entao esperado\n", token->lexema);return;} //\terro
     analisa_comando_simples();
-    if (strcmp(list->Simbolo, "ssenao") == 0)
+    if (strcmp(token->Simbolo, "ssenao") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
+        lexico();
+        printf("\n %s ", token->lexema);
         analisa_comando_simples();
     }
     printf("\n[analisa_se end]\n");
@@ -460,10 +498,10 @@ void analisa_se(){
 void analisa_expressao(){
     printf("\n[analisa_expressao]\n");
     analisa_expressao_simples();
-    if (strcmp(list->Simbolo, "smaior") == 0 || strcmp(list->Simbolo, "smaiorig") == 0 || strcmp(list->Simbolo, "sig") == 0 || strcmp(list->Simbolo, "smenor") == 0 || strcmp(list->Simbolo, "smenorig") == 0 || strcmp(list->Simbolo, "sdif") == 0 )
+    if (strcmp(token->Simbolo, "smaior") == 0 || strcmp(token->Simbolo, "smaiorig") == 0 || strcmp(token->Simbolo, "sig") == 0 || strcmp(token->Simbolo, "smenor") == 0 || strcmp(token->Simbolo, "smenorig") == 0 || strcmp(token->Simbolo, "sdif") == 0 )
     {
-         list = list->next;
-         printf("\n %s ", list->lexema);
+         lexico();
+         printf("\n %s ", token->lexema);
          analisa_expressao_simples();
     }
     printf("\n[analisa_expressao end]\n");
@@ -471,13 +509,13 @@ void analisa_expressao(){
 
 void analisa_expressao_simples(){
     printf("\n[analisa_expressao_simples]\n");
-    if(strcmp(list->Simbolo, "smais") == 0 || strcmp(list->Simbolo, "smenos") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
+    if(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
     analisa_termo();
-    while(strcmp(list->Simbolo, "smais") == 0 || strcmp(list->Simbolo, "smenos") == 0 || strcmp(list->Simbolo, "sou") == 0)
+    while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
+        lexico();
+        printf("\n %s ", token->lexema);
         analisa_termo();
     }
     printf("\n[analisa_expressao_simples end]\n");
@@ -486,10 +524,10 @@ void analisa_expressao_simples(){
 void analisa_termo(){
     printf("\n[analisa_termo]\n");
     analisa_fator();
-    while(strcmp(list->Simbolo, "smult") == 0 || strcmp(list->Simbolo, "sdiv") == 0 || strcmp(list->Simbolo, "se") == 0)
+    while(strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0 || strcmp(token->Simbolo, "se") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
+        lexico();
+        printf("\n %s ", token->lexema);
         analisa_fator();
     }
     printf("\n[analisa_termo end]\n");
@@ -497,94 +535,111 @@ void analisa_termo(){
 
 void analisa_fator(){
     printf("\n[analisa_fator]\n");
-    if (strcmp(list->Simbolo, "sidentificador") == 0)
+    if (strcmp(token->Simbolo, "sidentificador") == 0)
     {
         analisa_chamada_funcao();
-    } else if (strcmp(list->Simbolo, "snumero") == 0)
+    } else if (strcmp(token->Simbolo, "snumero") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
-    } else if (strcmp(list->Simbolo, "snao") == 0)
+        lexico();
+        printf("\n %s ", token->lexema);
+    } else if (strcmp(token->Simbolo, "snao") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
+        lexico();
+        printf("\n %s ", token->lexema);
         analisa_fator();
-    } else if (strcmp(list->Simbolo, "sabre_parenteses") == 0)
+    } else if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
     {
-        list = list->next;
-        printf("\n %s ", list->lexema);
+        lexico();
+        printf("\n %s ", token->lexema);
         analisa_expressao();
-        if (strcmp(list->Simbolo, "sfecha_parenteses") == 0)
-            {list = list->next; printf("\n %s ", list->lexema);}
-        else {printf("\terro em %s, \")\" esperado\n", list->lexema);return;} //\terro
-    } else if (strcmp(list->Simbolo, "sverdadeiro") == 0 || strcmp(list->Simbolo, "sfalso") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, verdadeiro ou falso esperado\n", list->lexema);return;}//\terro
+        if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
+            {lexico(); printf("\n %s ", token->lexema);}
+        else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;} //\terro
+    } else if (strcmp(token->Simbolo, "sverdadeiro") == 0 || strcmp(token->Simbolo, "sfalso") == 0)
+        {lexico(); printf("\n %s ", token->lexema);}
+    else {printf("\terro em %s, verdadeiro ou falso esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_fator end]\n");
 }
 
 void analisa_chamada_procedimento(){
     printf("\n[analisa_chamada_procedimento]\n");
     //semantic shiet
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    if(strcmp(token->Simbolo,"sponto_virgula")==0)
+    {
+        lexico();
+        printf("\n %s ", token->lexema);
+    } else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}
     printf("\n[analisa_chamada_procedimento end]\n");
 }
 void analisa_chamada_funcao(){
     printf("\n[analisa_chamada_funcao]\n");
     //semantic shiet
-    list = list->next;
-    printf("\n %s ", list->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
     printf("\n[analisa_chamada_funcao end]\n");
 }
 
 void analisa_subrotinas()
 {
     printf("\n[analisa_subrotinas]\n");
-    while(strcmp(list->Simbolo,"sprocedimento")==0|| strcmp(list->Simbolo,"sfuncao")==0)
+    while(strcmp(token->Simbolo,"sprocedimento")==0|| strcmp(token->Simbolo,"sfuncao")==0)
     {
-        if(strcmp(list->Simbolo,"sprocedimento")==0)
+        if(strcmp(token->Simbolo,"sprocedimento")==0)
             analisa_declaracao_procedimento();
         else analisa_declaracao_funcao();
-        if(strcmp(list->Simbolo,"sponto_virgula")==0)
-            {list = list->next; printf("\n %s ", list->lexema);}
-        else {printf("\terro em %s, \";\" esperado\n", list->lexema);return;}//\terro, ; esperado
+        if(strcmp(token->Simbolo,"sponto_virgula")==0)
+            {lexico(); printf("\n %s ", token->lexema);}
+        else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro, ; esperado
     }
     printf("\n[analisa_subrotinas end]\n");
 }
 
 void analisa_declaracao_procedimento(){
     printf("\n[analisa_declaracao_procedimento]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
-    if(strcmp(list->Simbolo,"sidentificador")==0){
-        list = list->next;
-        printf("\n %s ", list->lexema);
-        if(strcmp(list->Simbolo,"sponto_virgula")==0)
+    lexico();
+    printf("\n %s ", token->lexema);
+    if(strcmp(token->Simbolo,"sidentificador")==0){
+        lexico();
+        printf("\n %s ", token->lexema);
+        if(strcmp(token->Simbolo,"sponto_virgula")==0)
             analisa_bloco();
-        else {printf("\terro em %s, \";\" esperado\n", list->lexema);return;}//\terro ; esperado
+        else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro ; esperado
     }
-    else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro
+    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_procedimento end]\n");
 }
 void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao]\n");
-    list = list->next;
-    printf("\n %s ", list->lexema);
-    if(strcmp(list->Simbolo,"sidentificador")==0){
-        list = list->next;
-        printf("\n %s ", list->lexema);
-        if(strcmp(list->Simbolo,"sdoispontos")==0){
-            list = list->next;
-            printf("\n %s ", list->lexema);
-            if(strcmp(list->Simbolo,"sinteiro")==0 || strcmp(list->Simbolo,"sbooleano")==0){
-                list = list->next;
-                printf("\n %s ", list->lexema);
-                if(strcmp(list->Simbolo,"sponto_virgula")==0)
+    lexico();
+    printf("\n %s ", token->lexema);
+    if(strcmp(token->Simbolo,"sidentificador")==0){
+        lexico();
+        printf("\n %s ", token->lexema);
+        if(strcmp(token->Simbolo,"sdoispontos")==0){
+            lexico();
+            printf("\n %s ", token->lexema);
+            if(strcmp(token->Simbolo,"sinteiro")==0 || strcmp(token->Simbolo,"sbooleano")==0){
+                lexico();
+                printf("\n %s ", token->lexema);
+                if(strcmp(token->Simbolo,"sponto_virgula")==0)
                     analisa_bloco();
-            }else {printf("\terro em %s, tipo nao reconhecido\n", list->lexema);return;}//\terro
-        }else {printf("\terro em %s, \":\" esperado\n", list->lexema);return;}//\terro
-    }else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro
+            }else {printf("\terro em %s, tipo nao reconhecido\n", token->lexema);return;}//\terro
+        }else {printf("\terro em %s, \":\" esperado\n", token->lexema);return;}//\terro
+    }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_funcao end]\n");
 }
 
+<<<<<<< Updated upstream
+=======
+void addPilha(){
+
+}
+
+void rmPilha(){
+
+}
+
+bool scanPilha(char* simbolo){
+
+}
+>>>>>>> Stashed changes
