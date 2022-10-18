@@ -39,13 +39,9 @@ void lexico();
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
-<<<<<<< Updated upstream
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-
-=======
-    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
->>>>>>> Stashed changes
+    arquivo=fopen("C:/Users/19086818/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -54,23 +50,9 @@ int main(){
         strcat(text, line);
         memset(line, 0, sizeof(line));
     }
-    //printList(&list);
     analise();
     printf("\nanalise sintatica concluida\n");
 
-<<<<<<< Updated upstream
-    tipoToken* tmp;
-    while (head != NULL)
-    {
-        tmp = head;
-        head = head->next;
-        free(tmp->lexema);
-        free(tmp->Simbolo);
-        free(tmp);
-    }
-
-=======
->>>>>>> Stashed changes
     fclose(arquivo);
     return 0;
 
@@ -85,35 +67,10 @@ tipoToken *createToken(char* lex, char* sim){
     strcpy(newToken->lexema, lex);
     newToken->Simbolo = malloc(strlen(sim));
     strcpy(newToken->Simbolo,sim);
-    //newToken->next = NULL;
     return newToken;
 }
 
-<<<<<<< Updated upstream
-void addToList(char* lex, char* sim){
-
-    tipoToken *auxlist = list;
-
-    while (list != NULL)
-        list = list->next;
-    list = createToken(lex,sim);
-    list = auxlist;
-}
-
-void printList(tipoToken** list){
-    printf("simbolo\t\t\tlexema\n");
-    while(*list != NULL)
-    {
-        printf ("%s\t\t\t%s \n", (*list)->Simbolo, (*list)->lexema);
-        *list = (*list)->next;
-    }
-
-}
-
-int tratarIdentificador(int index){
-=======
 void tratarIdentificador(){
->>>>>>> Stashed changes
     char ID[30] = {0};
     char palavrasReservadas[][20] = { "programa",
                                     "se",
@@ -150,23 +107,14 @@ void tratarIdentificador(){
 
     for (int I = 0; I < 21; I++)
     {
-
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
-<<<<<<< Updated upstream
-            addToList(ID, s);
-            return index;
-        }
-    }
-    addToList(ID, "sidentificador");
-    return index;
-=======
             token = createToken( ID, s);
+            return;
         }
     }
-    token = createToken( ID, s);
->>>>>>> Stashed changes
+    token = createToken( ID, "sidentificador");
 }
 
 void tratarDigito(){
@@ -181,12 +129,7 @@ void tratarDigito(){
         cs[0] = text[index];
     }
     while(cs[0] >=48 && cs[0] <= 57);
-<<<<<<< Updated upstream
-    addToList(ID, "snumero");
-    return index;
-=======
     token = createToken( ID, "snumero");
->>>>>>> Stashed changes
 }
 
 void tratarOperador(){
@@ -248,7 +191,6 @@ void tratarOperador(){
 
 void lexico(){
     char c = text[index];
-
         if (c == 0)
             token = NULL;
         else if (c == '{')
@@ -261,6 +203,7 @@ void lexico(){
                     printf("erro, comentario sem fim\n");
             }
             index++;
+            lexico();
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             tratarIdentificador();
         else if (c >=48 && c <= 57)
@@ -275,30 +218,17 @@ void lexico(){
         c = text[index];
 }
 
-<<<<<<< Updated upstream
-
-void sintatico(){
-    printf("\n[sintatico]\n");
-    if (strcmp(list->Simbolo, "sprograma") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, \"programa\" esperado\n", list->lexema);return;}//\terro não tem programa
-    if (strcmp(list->Simbolo, "sidentificador") == 0)
-        {list = list->next; printf("\n %s ", list->lexema);}
-    else {printf("\terro em %s, identificador esperado\n", list->lexema);return;}//\terro falta identificador
-    if (strcmp(list->Simbolo, "sponto_virgula") == 0)
-=======
 void analise(){
     printf("\n[analise]\n");
     lexico();
-    printf("\nteste: %s", token->lexema);
+    printf ("teste: %s %s\n", token->lexema, token->Simbolo);
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \"programa\" esperado\n", token->lexema);return;}//\terro não tem programa
+    else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
     if (strcmp(token->Simbolo, "sidentificador") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro falta identificador
+    else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
->>>>>>> Stashed changes
         analisa_bloco();
     else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro ponto_virg
     if (strcmp(token->Simbolo, "sponto") == 0)
@@ -564,11 +494,6 @@ void analisa_fator(){
 void analisa_chamada_procedimento(){
     printf("\n[analisa_chamada_procedimento]\n");
     //semantic shiet
-    if(strcmp(token->Simbolo,"sponto_virgula")==0)
-    {
-        lexico();
-        printf("\n %s ", token->lexema);
-    } else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}
     printf("\n[analisa_chamada_procedimento end]\n");
 }
 void analisa_chamada_funcao(){
@@ -629,8 +554,7 @@ void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao end]\n");
 }
 
-<<<<<<< Updated upstream
-=======
+/*
 void addPilha(){
 
 }
@@ -642,4 +566,5 @@ void rmPilha(){
 bool scanPilha(char* simbolo){
 
 }
->>>>>>> Stashed changes
+
+*/
