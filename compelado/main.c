@@ -5,7 +5,7 @@
 
 #define LINE_LENGTH 255
 
-/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* ESTRUTURAS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 typedef struct tipoToken{
     char* lexema;
@@ -13,22 +13,16 @@ typedef struct tipoToken{
     struct tipoToken *next;
 }tipoToken;
 
-typedef struct noSimbolo{
+typedef struct ns{
     char* tipo;
     char* simbolo;
     int escopo;
 }noSimbolo;
 
-typedef struct tabelaSimbolos{
-    struct tabelaSimbolos *prev;
+typedef struct pilha{
+    struct pilha *prev;
     noSimbolo simbolo;
-};
-
-char text[2048];
-
-FILE *arquivo;
-
-tipoToken* list = NULL;
+} tabelaSimbolos;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÇALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -90,10 +84,30 @@ void analisa_declaracao_procedimento();
 
 void analisa_declaracao_funcao();
 
+noSimbolo criaNo();
+
+tabelaSimbolos* criaPilha();
+
+noSimbolo pushNo(char* simbolos, char* tipo, int escopo);
+
+void pushPilha(char* simbolos, char* tipo, int escopo);
+
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+
+char text[2048];
+
+FILE *arquivo;
+
+tipoToken* list = NULL;
+
+tabelaSimbolos* TS;
+
+
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
     char line[LINE_LENGTH];
+    TS = criaPilha();
     //O endereço deve ser alterado para o adequado SEMPRE
     //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
@@ -595,8 +609,7 @@ void analisa_chamada_funcao(){
     printf("\n[analisa_chamada_funcao end]\n");
 }
 
-void analisa_subrotinas()
-{
+void analisa_subrotinas(){
     printf("\n[analisa_subrotinas]\n");
     while(strcmp(list->Simbolo,"sprocedimento")==0|| strcmp(list->Simbolo,"sfuncao")==0)
     {
@@ -646,11 +659,63 @@ void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao end]\n");
 }
 
-void addPilha(){
+
+
+//Função cria e prepara um nó para iniciar uma pilha
+noSimbolo criaNo(){
+    noSimbolo novoNo;
+    novoNo.escopo = NULL;
+    novoNo.simbolo = (char*) malloc(sizeof(char));
+    novoNo.simbolo = NULL;
+    novoNo.tipo = (char*) malloc(sizeof(char));
+    novoNo.tipo = NULL;
+    return novoNo;
 
 }
+//Cria uma nova pilha
+tabelaSimbolos* criaPilha(){
+    tabelaSimbolos* pilhaNova = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    pilhaNova->simbolo = criaNo();
+    pilhaNova->prev = NULL;
+    return pilhaNova;
+}
 
-void rmPilha(){
+
+
+noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
+    noSimbolo novoNo;
+    novoNo.escopo = escopo;
+    novoNo.simbolo = (char*) malloc(sizeof(char));
+    novoNo.simbolo = simbolos;
+    novoNo.tipo = (char*) malloc(sizeof(char));
+    novoNo.tipo = tipo;
+    return novoNo;
+}
+
+void pushPilha(char* simbolos, char* tipo, int escopo){
+    tabelaSimbolos* aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    if(TS->simbolo.escopo == NULL)
+        TS->simbolo = pushNo(simbolos, tipo, escopo);
+    else{
+        aux->simbolo = pushNo(simbolos, tipo, escopo);
+        aux->prev = TS;
+        TS = aux;
+    }
+    free(aux);
+}
+
+noSimbolo popPilha(){
+    noSimbolo aux;
+    if(TS->simbolo.escopo == NULL)
+        return TS->simbolo;
+    else if(TS->prev == NULL){
+        aux = TS->simbolo;
+        TS->simbolo = criaNo();
+        return aux;
+    }
+    aux = TS->simbolo;
+    TS = TS->prev;
+    return aux;
 
 }
 
