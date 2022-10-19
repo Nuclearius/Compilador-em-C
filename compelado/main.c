@@ -1,30 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define LINE_LENGTH 255
 
-/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* ESTRUTURAS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
-    //struct tipoToken *next;
 }tipoToken;
 
-char text[2048];
+typedef struct ns{
+    char* tipo;
+    char* simbolo;
+    int escopo;
+}noSimbolo;
 
-FILE *arquivo;
-
-tipoToken* token = NULL;
-
-int index = 0;
+typedef struct pilha{
+    struct pilha *prev;
+    noSimbolo simbolo;
+} tabelaSimbolos;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÇALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 tipoToken *createToken(char* lex, char* sim);
-
-void addToList(char* lex, char* sim);
 
 void tratarIdentificador();
 
@@ -33,6 +34,71 @@ void tratarDigito();
 void tratarOperador();
 
 void lexico();
+
+void analisador();
+
+void analisa_bloco();
+
+void et_analisa_var();
+
+void analisa_var();
+
+void analisa_tipo();
+
+void analisa_comandos();
+
+void analisa_comando_simples();
+
+void analisa_atrib_chprocedimento();
+
+void analisa_atribuicao();
+
+void analisa_leia();
+
+void analisa_escreva();
+
+void analisa_enquanto();
+
+void analisa_se();
+
+void analisa_expressao();
+
+void analisa_expressao_simples();
+
+void analisa_termo();
+
+void analisa_fator();
+
+void analisa_chamada_procedimento();
+
+void analisa_chamada_funcao();
+
+void analisa_subrotinas();
+
+void analisa_declaracao_procedimento();
+
+void analisa_declaracao_funcao();
+
+noSimbolo criaNo();
+
+tabelaSimbolos* criaPilha();
+
+noSimbolo pushNo(char* simbolos, char* tipo, int escopo);
+
+void pushPilha(char* simbolos, char* tipo, int escopo);
+
+/*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
+
+char text[2048];
+
+FILE *arquivo;
+
+tipoToken* token = NULL;
+
+tabelaSimbolos* TS;
+
+int _index_ = 0;
+
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -98,11 +164,11 @@ void tratarIdentificador(){
     s[0] = 's';
     char cs[2] = {0};
     cs[1] = '\0';
-    cs [0] = text[index];
+    cs [0] = text[_index_];
     do{
         strcat( ID, cs);
-        index++;
-        cs[0] = text[index];
+        _index_++;
+        cs[0] = text[_index_];
     }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
 
     for (int I = 0; I < 21; I++)
@@ -121,12 +187,12 @@ void tratarDigito(){
     char ID[30]={0};
     char cs[2];
     cs[1] = '\0';
-    cs [0] = text[index];
+    cs [0] = text[_index_];
     do{
 
         strcat( ID, cs);
-        index++;
-        cs[0] = text[index];
+        _index_++;
+        cs[0] = text[_index_];
     }
     while(cs[0] >=48 && cs[0] <= 57);
     token = createToken( ID, "snumero");
@@ -136,8 +202,8 @@ void tratarOperador(){
     char ID[30] = {0};
     char c[2];
     c[1] = '\0';
-    c[0] = text[index];
-    index++;
+    c[0] = text[_index_];
+    _index_++;
     switch(c[0]){
         case '+': token = createToken( c, "smais"); break;
         case '-': token = createToken( c, "smenos"); break;
@@ -149,39 +215,39 @@ void tratarOperador(){
         case ')': token = createToken( c, "sfecha_parenteses"); break;
         case '=': token = createToken( c, "sig"); break;
         case '!':
-            if (text[index] != '=')
-                printf("\terro, caractere %s nao esperado, esperava \"=\"\n", text[index]);
+            if (text[_index_] != '=')
+                printf("\terro, caractere %s nao esperado, esperava \"=\"\n", text[_index_]);
             else
                 {
-                    index++;
+                    _index_++;
                     token = createToken( "!=", "sdif");
 
                 }
             break;
         case ':':
-            if (text[index] != '=')
+            if (text[_index_] != '=')
                 token = createToken( c, "sdoispontos");
             else
                 {
-                    index++;
+                    _index_++;
                     token = createToken( ":=", "satribuicao");
                 }
             break;
         case '<':
-            if (text[index] != '=')
+            if (text[_index_] != '=')
                 token = createToken( c, "smenor");
             else
                 {
-                    index++;
+                    _index_++;
                     token = createToken( "<=", "smenorig");
                 }
             break;
         case '>':
-            if (text[index] != '=')
+            if (text[_index_] != '=')
                 token = createToken( c, "smaior");
             else
             {
-                index++;
+                _index_++;
                 token = createToken( ">=", "smaiorig");
             }
             break;
@@ -190,19 +256,19 @@ void tratarOperador(){
 }
 
 void lexico(){
-    char c = text[index];
+    char c = text[_index_];
         if (c == 0)
             token = NULL;
         else if (c == '{')
         {
             while (c!= '}' && c != 0)
             {
-                index++;
-                c = text[index];
+                _index_++;
+                c = text[_index_];
                 if (c == 0)
                     printf("erro, comentario sem fim\n");
             }
-            index++;
+            _index_++;
             lexico();
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
             tratarIdentificador();
@@ -210,12 +276,12 @@ void lexico(){
             tratarDigito();
         else if (c == 32 || c == 10 || c == 13)
         {
-            index++;
+            _index_++;
             lexico();
         }
         else
             tratarOperador();
-        c = text[index];
+        c = text[_index_];
 }
 
 void analisador(){
@@ -554,17 +620,64 @@ void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao end]\n");
 }
 
-/*
-void addPilha(){
+//Função cria e prepara um nó para iniciar uma pilha
+noSimbolo criaNo(){
+    noSimbolo novoNo;
+    novoNo.escopo = NULL;
+    novoNo.simbolo = (char*) malloc(sizeof(char));
+    novoNo.simbolo = NULL;
+    novoNo.tipo = (char*) malloc(sizeof(char));
+    novoNo.tipo = NULL;
+    return novoNo;
 
 }
+//Cria uma nova pilha
+tabelaSimbolos* criaPilha(){
+    tabelaSimbolos* pilhaNova = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    pilhaNova->simbolo = criaNo();
+    pilhaNova->prev = NULL;
+    return pilhaNova;
+}
 
-void rmPilha(){
+
+
+noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
+    noSimbolo novoNo;
+    novoNo.escopo = escopo;
+    novoNo.simbolo = (char*) malloc(sizeof(char));
+    novoNo.simbolo = simbolos;
+    novoNo.tipo = (char*) malloc(sizeof(char));
+    novoNo.tipo = tipo;
+    return novoNo;
+}
+
+void pushPilha(char* simbolos, char* tipo, int escopo){
+    tabelaSimbolos* aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    if(TS->simbolo.escopo == NULL)
+        TS->simbolo = pushNo(simbolos, tipo, escopo);
+    else{
+        aux->simbolo = pushNo(simbolos, tipo, escopo);
+        aux->prev = TS;
+        TS = aux;
+    }
+    free(aux);
+}
+
+noSimbolo popPilha(){
+    noSimbolo aux;
+    if(TS->simbolo.escopo == NULL)
+        return TS->simbolo;
+    else if(TS->prev == NULL){
+        aux = TS->simbolo;
+        TS->simbolo = criaNo();
+        return aux;
+    }
+    aux = TS->simbolo;
+    TS = TS->prev;
+    return aux;
 
 }
 
 bool scanPilha(char* simbolo){
 
 }
-
-*/
