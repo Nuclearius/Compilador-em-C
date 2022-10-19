@@ -39,9 +39,9 @@ void lexico();
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-    arquivo=fopen("C:/Users/19086818/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
+    //arquivo=fopen("C:/Users/19086818/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
