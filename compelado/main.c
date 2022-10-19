@@ -50,7 +50,7 @@ int main(){
         strcat(text, line);
         memset(line, 0, sizeof(line));
     }
-    analise();
+    analisador();
     printf("\nanalise sintatica concluida\n");
 
     fclose(arquivo);
@@ -218,7 +218,7 @@ void lexico(){
         c = text[index];
 }
 
-void analise(){
+void analisador(){
     printf("\n[analise]\n");
     lexico();
     printf ("teste: %s %s\n", token->lexema, token->Simbolo);
