@@ -354,6 +354,10 @@ void analisa_var(){
                 lexico();
                 printf("\n %s ", token->lexema);
             }
+            else{
+                printf("ERRO, nome de variavel ja utilizado");
+                return;
+            }
         }
         else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}
         if(strcmp(token->Simbolo,"svirgula")== 0 || strcmp(token->Simbolo,"sdoispontos")== 0)
@@ -452,8 +456,16 @@ void analisa_leia(){
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
-    if (strcmp(token->Simbolo, "sidentificador") == 0)
-        {lexico(); printf("\n %s ", token->lexema);}
+    if (strcmp(token->Simbolo, "sidentificador") == 0){
+        if(scanPilha(token->lexema)) {
+            lexico();
+            printf("\n %s ", token->lexema);
+        }
+        else{
+            printf("ERRO, variavel não foi encontrada");
+            return;
+        }
+    }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     //random semantic shit
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
@@ -469,8 +481,16 @@ void analisa_escreva(){
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
-    if (strcmp(token->Simbolo, "sidentificador") == 0)
-        {lexico(); printf("\n %s ", token->lexema);}
+    if (strcmp(token->Simbolo, "sidentificador") == 0){
+        if(scanPilha(token->lexema)) {
+            lexico();
+            printf("\n %s ", token->lexema);
+        }
+        else{
+            printf("ERRO, variavel não encontrada");
+            return;
+        }
+    }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     //random semantic shit
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
@@ -606,36 +626,65 @@ void analisa_subrotinas()
 void analisa_declaracao_procedimento(){
     printf("\n[analisa_declaracao_procedimento]\n");
     lexico();
+    escopo_global++;
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
-        lexico();
-        printf("\n %s ", token->lexema);
-        if(strcmp(token->Simbolo,"sponto_virgula")==0)
-            analisa_bloco();
-        else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro ; esperado
+        if(!(scanPilha(token->lexema))) {
+            lexico();
+            printf("\n %s ", token->lexema);
+            if (strcmp(token->Simbolo, "sponto_virgula") == 0)
+                analisa_bloco();
+            else {
+                printf("\terro em %s, \";\" esperado\n", token->lexema);
+                return;
+            }//\terro ; esperado
+        }
+        else{
+            printf("ERRO, procedimentos com nomes iguais");
+            return;
+        }
     }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_procedimento end]\n");
+    escopo_global--;
 }
 void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao]\n");
     lexico();
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
-        lexico();
-        printf("\n %s ", token->lexema);
-        if(strcmp(token->Simbolo,"sdoispontos")==0){
+        if(!(scanPilha(token->lexema))) {
+            //InsereTabela
             lexico();
+            escopo_global++;
             printf("\n %s ", token->lexema);
-            if(strcmp(token->Simbolo,"sinteiro")==0 || strcmp(token->Simbolo,"sbooleano")==0){
+            if (strcmp(token->Simbolo, "sdoispontos") == 0) {
                 lexico();
                 printf("\n %s ", token->lexema);
-                if(strcmp(token->Simbolo,"sponto_virgula")==0)
-                    analisa_bloco();
-            }else {printf("\terro em %s, tipo nao reconhecido\n", token->lexema);return;}//\terro
-        }else {printf("\terro em %s, \":\" esperado\n", token->lexema);return;}//\terro
+                if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
+                    if(token->Simbolo == "Sinteger")
+                        defineTipoVar("int");
+                    else
+                        defineTipoVar("bool");
+                    lexico();
+                    printf("\n %s ", token->lexema);
+                    if (strcmp(token->Simbolo, "sponto_virgula") == 0)
+                        analisa_bloco();
+                } else {
+                    printf("\terro em %s, tipo nao reconhecido\n", token->lexema);
+                    return;
+                }//\terro
+            } else {
+                printf("\terro em %s, \":\" esperado\n", token->lexema);
+                return;
+            }//\terro
+        }
+        else{
+            printf("ERRO, tipo invalido");
+        }
     }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_funcao end]\n");
+    escopo_global--;
 }
 
 //Função cria e prepara um nó para iniciar uma pilha
