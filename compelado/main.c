@@ -93,6 +93,8 @@ bool scanPilha(char* simbolo);
 
 void defineTipoVar(char* tipo);
 
+char* confereTipo(char* simbolo);
+
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 char text[2048];
@@ -569,10 +571,18 @@ void analisa_termo(){
 
 void analisa_fator(){
     printf("\n[analisa_fator]\n");
-    if (strcmp(token->Simbolo, "sidentificador") == 0)
-    {
-        analisa_chamada_funcao();
-    } else if (strcmp(token->Simbolo, "snumero") == 0)
+    if (strcmp(token->Simbolo, "sidentificador") == 0) {
+
+        if (scanPilha(token->lexema))
+            confereTipo();
+        //trocar funçao fazer funçoes separadas
+        if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
+            analisa_chamada_funcao();
+        } else lexico(token);
+    }else
+        printf("erro");
+
+    }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
         lexico();
         printf("\n %s ", token->lexema);
@@ -780,5 +790,27 @@ void defineTipoVar(char* tipo){
         noAux = popPilha(aux);
         pushPilha(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
     }while(aux->simbolo.escopo != NULL);
+
+}
+char* confereTipo(char* simbolo){
+    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    noSimbolo noAux;
+    char *resp = NULL;
+
+    do{
+        noAux = popPilha(TS);
+        if(strcmp(noAux.simbolo, simbolo) == 0){
+            pushPilha(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+            strcpy(resp, noAux.tipo);
+            break;
+        }
+        pushPilha(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+    }while(TS->simbolo.escopo != NULL);
+    do{
+        noAux = popPilha(aux);
+        pushPilha(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+    }while(aux->simbolo.escopo != NULL);
+
+    return resp;
 
 }
