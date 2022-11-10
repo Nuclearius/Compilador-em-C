@@ -368,7 +368,6 @@ void analisa_var(){
             {
                 lexico();
                 printf("\n %s ", token->lexema);
-                printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo,"sdoispontos")== 0)
                     {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro, identificador espserado
             }
@@ -432,8 +431,10 @@ void analisa_comando_simples(){
 
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
+    //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
     lexico();
     printf("\n %s ", token->lexema);
+
     if (strcmp(token->Simbolo, "satribuicao") == 0)
     {
         analisa_atribuicao();
@@ -469,7 +470,6 @@ void analisa_leia(){
         }
     }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
-    //random semantic shit
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
@@ -574,13 +574,14 @@ void analisa_fator(){
     if (strcmp(token->Simbolo, "sidentificador") == 0) {
 
         if (scanPilha(token->lexema))
-            confereTipo();
-        //trocar funçao fazer funçoes separadas
-        if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
+        {
+            confereTipo(); //trocar funçao fazer funçoes separadas
+            if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) //checar pelo semantico
             analisa_chamada_funcao();
-        } else lexico(token);
+            } else lexico(token);
+        }
     }else
-        printf("erro");
+        printf("erro, identificador esperado");
 
     }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
@@ -607,12 +608,20 @@ void analisa_fator(){
 
 void analisa_chamada_procedimento(){
     printf("\n[analisa_chamada_procedimento]\n");
-    //semantic shiet
+    //pesquisa procedimento
+    //se existir
+    //gera código shiet
+    //senão
+    //erro procedimento não existe
     printf("\n[analisa_chamada_procedimento end]\n");
 }
 void analisa_chamada_funcao(){
     printf("\n[analisa_chamada_funcao]\n");
-    //semantic shiet
+    //pesquisa função
+    //se existir
+    //gera código shiet
+    //senão
+    //erro procedimento não existe
     lexico();
     printf("\n %s ", token->lexema);
     printf("\n[analisa_chamada_funcao end]\n");
@@ -640,6 +649,7 @@ void analisa_declaracao_procedimento(){
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(scanPilha(token->lexema))) {
+            //insere tabela
             lexico();
             printf("\n %s ", token->lexema);
             if (strcmp(token->Simbolo, "sponto_virgula") == 0)
@@ -647,7 +657,7 @@ void analisa_declaracao_procedimento(){
             else {
                 printf("\terro em %s, \";\" esperado\n", token->lexema);
                 return;
-            }//\terro ; esperado
+            }
         }
         else{
             printf("ERRO, procedimentos com nomes iguais");
@@ -661,6 +671,7 @@ void analisa_declaracao_procedimento(){
 void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao]\n");
     lexico();
+    escopo_global++;
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(scanPilha(token->lexema))) {
@@ -673,7 +684,7 @@ void analisa_declaracao_funcao(){
                 printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
                     if(token->Simbolo == "Sinteger")
-                        defineTipoVar("int");
+                        defineTipoVar("int"); //define tipo da função
                     else
                         defineTipoVar("bool");
                     lexico();
@@ -690,7 +701,7 @@ void analisa_declaracao_funcao(){
             }//\terro
         }
         else{
-            printf("ERRO, tipo invalido");
+            printf("ERRO, identificador já utilizado");
         }
     }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_funcao end]\n");
