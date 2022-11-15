@@ -120,8 +120,8 @@ int escopo_global = 0;
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/sint1.txt","r");
-    //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19086818/Downloads/Compilador-em-C-test/compelado/sint10.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
@@ -181,11 +181,11 @@ void tratarIdentificador(){
     cs[1] = '\0';
     cs [0] = text[_index_];
     do{
+
         strcat( ID, cs);
         _index_++;
         cs[0] = text[_index_];
     }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
-
     for (int I = 0; I < 21; I++)
     {
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
@@ -195,6 +195,7 @@ void tratarIdentificador(){
             return;
         }
     }
+
     token = createToken( ID, "sidentificador");
 }
 
@@ -297,6 +298,7 @@ void lexico(){
         else
             tratarOperador();
         c = text[_index_];
+
 }
 
 void analisador(){
@@ -307,7 +309,7 @@ void analisador(){
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        insereTabela(TS, token->lexema,"nomedeprograma", escopo_global);
+        insereTabela(TS, token->lexema,"nomedeprograma", escopo_global, 0);
         lexico(); printf("\n %s ", token->lexema);
         }
     else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
@@ -357,7 +359,7 @@ void analisa_var(){
     do{
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(scanPilha(token->lexema))) {
-                insereTabela(TS,token->lexema, "variavel", escopo_global);
+                insereTabela(TS,token->lexema, "variavel", escopo_global, 0);
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -581,7 +583,7 @@ void analisa_fator(){
 
         if (scanPilha(token->lexema))
         {
-            confereTipo(token->lexema); //trocar funçao fazer funçoes separadas
+            confereTipo(token->lexema, 0); //trocar funçao fazer funçoes separadas
             if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) //checar pelo semantico
                  analisa_chamada_funcao(token->lexema);
             else
@@ -783,15 +785,15 @@ bool scanPilha(char* simbolo){
     do{
         noAux = popPilha(TS);
         if(strcmp(noAux.simbolo, simbolo) == 0){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
         }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(TS->simbolo.escopo != NULL);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
     return resp;
@@ -805,11 +807,11 @@ void defineTipoVar(char* tipo){
         noAux = popPilha(TS);
         strcat(noAux.tipo," ");
         strcat(noAux.tipo,tipo);
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(strcmp(TS->simbolo.tipo,"variavel") == 0);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
 }
@@ -822,11 +824,11 @@ void defineTipoFun(char* tipo){
         noAux = popPilha(TS);
         strcat(noAux.tipo," ");
         strcat(noAux.tipo,tipo);
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(strcmp(TS->simbolo.tipo,"funcao") == 0);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
 }
@@ -839,15 +841,15 @@ char* confereTipo(char* simbolo, int scope){
     do{
         noAux = popPilha(TS);
         if(strcmp(noAux.simbolo, simbolo) == 0){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             strcpy(resp, noAux.tipo);
             break;
         }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(TS->simbolo.escopo != NULL);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
     return resp;
@@ -862,15 +864,15 @@ bool pesquisa_procedimento(char *funcao){
     do{
         noAux = popPilha(TS);
         if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento")){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
         }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(TS->simbolo.escopo != NULL);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
     return resp;
@@ -884,15 +886,15 @@ bool pesquisa_funcao(char *funcao){
     do{
         noAux = popPilha(TS);
         if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int"))){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
         }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(TS->simbolo.escopo != NULL);
     do{
         noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo);
+        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux->simbolo.escopo != NULL);
 
     return resp;

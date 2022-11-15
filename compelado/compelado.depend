@@ -4,10 +4,11 @@
 	<stdlib.h>
 	<string.h>
 
-1665421741 source:c:\users\nucle\onedrive\documentos\github\compilador-em-c\compelado\main.c
+1668527111 source:c:\users\nucle\onedrive\documentos\github\compilador-em-c\compelado\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<stdbool.h>
 
 1665488872 source:c:\users\nucle\documents\github\compilador-em-c\compelado\main.c
 	<stdio.h>
