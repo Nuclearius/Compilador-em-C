@@ -441,10 +441,12 @@ void analisa_comando_simples(){
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
     //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
+    analisa_chamada_procedimento();
+
     lexico();
     printf("\n %s ", token->lexema);
 
-    analisa_chamada_procedimento();
+
 
     if (strcmp(token->Simbolo, "satribuicao") == 0)
     {
@@ -504,7 +506,7 @@ void analisa_escreva(){
         }
     }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
-    //random semantic shit
+
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
@@ -890,7 +892,7 @@ bool pesquisa_declvar(char* simbolo){
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0 && (strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global >= noAux.escopo){
+        if(strcmp(noAux.simbolo, simbolo) == 0 && (strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global <= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
@@ -912,7 +914,7 @@ bool pesquisa_procedimento(char *funcao){
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento")){
+        if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento") && escopo_global >= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
@@ -934,7 +936,7 @@ bool pesquisa_funcao(char *funcao){
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int"))){
+        if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int")) &&  escopo_global >= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
