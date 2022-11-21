@@ -61,13 +61,13 @@ void analisa_enquanto();
 
 void analisa_se();
 
-void analisa_expressao();
+int analisa_expressao();
 
-void analisa_expressao_simples();
+int analisa_expressao_simples();
 
-void analisa_termo();
+int analisa_termo();
 
-void analisa_fator();
+int analisa_fator();
 
 void analisa_chamada_procedimento();
 
@@ -94,9 +94,11 @@ void defineTipoVar(char* tipo);
 
 void defineTipoFun(char* tipo);
 
-char* confereTipo(char* simbolo, int scope);
+char* confereTipo(char* simbolo);
 
 bool pesquisa_duplicvar(char* simbolo);
+
+bool pesquisa_declvar(char* simbolo);
 
 bool pesquisa_procedimento(char *funcao);
 
@@ -437,7 +439,7 @@ void analisa_comando_simples(){
     else analisa_comandos();
     printf("\n[analisa_comando_simples end]\n");
 }
-
+/*
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
     //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
@@ -463,6 +465,48 @@ void analisa_atribuicao(){
     analisa_expressao();
     printf("\n[analisa_atribuicao end]\n");
 }
+*/
+
+void analisa_atrib_chprocedimento(){
+    printf("\n[analisa_atrib_chprocedimento]\n");
+    //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
+    if (!pesquisa_procedimento(token->lexema))
+        analisa_atribuicao();
+    else
+    {
+    //gera codigo
+    }
+
+    lexico();
+    printf("\n %s ", token->lexema);
+    printf("\n[analisa_atrib_chprocedimento end]\n");
+}
+
+void analisa_atribuicao(){
+    printf("\n[analisa_atribuicao]\n");
+
+    if (!pesquisa_declvar(token->lexema))
+        return;// erro, identificador inválido
+
+    char *tipo = confereTipo(token->lexema);
+    lexico();
+    printf("\n %s ", token->lexema);
+    if (strcmp(token->Simbolo, "satribuicao") != 0)
+        return; //erro, ':=' esperado
+
+    lexico();
+    printf("\n %s ", token->lexema);
+    int exp_tipo = analisa_expressao();
+    if (exp_tipo == 2)
+        return; //erro
+    if ((strcmp(tipo, "variavel booleano") == 0 && exp_tipo == -1)||(strcmp(tipo, "variavel inteiro") == 0 && exp_tipo == 0))
+    {
+        printf("\n[analisa_atribuicao end]\n");
+        return; // sem erro
+    }
+
+    return; //expressão incompatível com váriavel
+}
 
 void analisa_leia(){
     printf("\n[analisa_leia]\n");
@@ -473,8 +517,11 @@ void analisa_leia(){
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         if(pesquisa_declvar(token->lexema)) {
+            if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
+            {
             lexico();
             printf("\n %s ", token->lexema);
+            } else return;; //erro, variável inválida
         }
         else{
             printf("ERRO, variavel não foi encontrada");
@@ -497,8 +544,11 @@ void analisa_escreva(){
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         if(pesquisa_declvar(token->lexema)) {
+           if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
+            {
             lexico();
             printf("\n %s ", token->lexema);
+            } else return;; //erro, variável inválida
         }
         else{
             printf("ERRO, variavel não encontrada");
@@ -517,7 +567,8 @@ void analisa_enquanto(){
     printf("\n[analisa_enquanto]\n");
     lexico();
     printf("\n %s ", token->lexema);
-    analisa_expressao();
+    if (analisa_expressao() != -1)
+        return; //erro, não é bool
     if (strcmp(token->Simbolo, "sfaca") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, faca esperado\n", token->lexema);return;} //\terro
@@ -529,7 +580,8 @@ void analisa_se(){
     printf("\n[analisa_se]\n");
     lexico();
     printf("\n %s ", token->lexema);
-    analisa_expressao();
+    if (analisa_expressao() != -1)
+        return; //erro, não é bool
     if (strcmp(token->Simbolo, "sentao") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, entao esperado\n", token->lexema);return;} //\terro
@@ -543,56 +595,83 @@ void analisa_se(){
     printf("\n[analisa_se end]\n");
 }
 
-void analisa_expressao(){
+int analisa_expressao(){
     printf("\n[analisa_expressao]\n");
-    analisa_expressao_simples();
+
+    int res = analisa_expressao_simples();                // 0 = int, -1 = bool
     if (strcmp(token->Simbolo, "smaior") == 0 || strcmp(token->Simbolo, "smaiorig") == 0 || strcmp(token->Simbolo, "sig") == 0 || strcmp(token->Simbolo, "smenor") == 0 || strcmp(token->Simbolo, "smenorig") == 0 || strcmp(token->Simbolo, "sdif") == 0 )
     {
-         lexico();
-         printf("\n %s ", token->lexema);
-         analisa_expressao_simples();
-    }
-    printf("\n[analisa_expressao end]\n");
-}
-
-void analisa_expressao_simples(){
-    printf("\n[analisa_expressao_simples]\n");
-    if(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0)
-        {lexico(); printf("\n %s ", token->lexema);}
-    analisa_termo();
-    while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
-    {
+        if (res != -1)
+            return 2; //erro
         lexico();
         printf("\n %s ", token->lexema);
-        analisa_termo();
+        if (analisa_expressao_simples() != -1)
+            return 2; //erro
     }
+    printf("\n[analisa_expressao end]\n");
+    return res;
+}
+
+int analisa_expressao_simples(){
+    printf("\n[analisa_expressao_simples]\n");
+    int tipo = -1;
+    if(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0)
+        {   tipo = 0;
+            lexico();
+            printf("\n %s ", token->lexema);
+        }
+    if (tipo == 0 && analisa_termo() != 0)
+        return 2; //erro, tipo incompativel
+
+    while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
+    {
+        if (strcmp(token->Simbolo, "sou") == 0)
+            tipo = -1;
+        else tipo = 0;
+        lexico();
+        printf("\n %s ", token->lexema);
+        if (analisa_termo() != tipo)
+            return 2; // erro
+    }
+    return tipo;
     printf("\n[analisa_expressao_simples end]\n");
 }
 
-void analisa_termo(){
+int analisa_termo(){
     printf("\n[analisa_termo]\n");
-    analisa_fator();
+    int tipo = analisa_fator();
     while(strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0 || strcmp(token->Simbolo, "se") == 0)
     {
+        if ((tipo == 0 && strcmp(token->Simbolo, "se") == 0) || ((strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0)&& tipo == -1))
+            return 2; //erro, tipos incompativeis
         lexico();
         printf("\n %s ", token->lexema);
-        analisa_fator();
+        if (analisa_fator() != tipo)
+            return 2; //erro tipos não compatíveis
     }
     printf("\n[analisa_termo end]\n");
+    return tipo;
 }
 
-void analisa_fator(){
+int  analisa_fator(){
     printf("\n[analisa_fator]\n");
+    int tipo = 0; // 0 = int, -1 = bool;
     if (strcmp(token->Simbolo, "sidentificador") == 0) {
 
-        if (scanPilha(token->lexema)) //pesquisa função
+        if (pesquisa_funcao(token->lexema))
         {
-            confereTipo(token->lexema, 0); //trocar funçao fazer funçoes separadas
-            if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) //checar pelo semantico
-                 analisa_chamada_funcao();
-            else
-                lexico(token);
-        }
+            if (strcmp(confereTipo(token->lexema), "funcao booleano") == 0)
+                tipo = -1;
+            lexico();
+            printf("\n %s ", token->lexema);
+
+        } else if (pesquisa_declvar(token->lexema))
+        {
+            if (strcmp(confereTipo(token->lexema), "variavel booleano") == 0)
+                tipo = -1;
+            lexico();
+            printf("\n %s ", token->lexema);
+        } else return 2; //erro
     }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
         lexico();
@@ -601,21 +680,29 @@ void analisa_fator(){
     {
         lexico();
         printf("\n %s ", token->lexema);
-        analisa_fator();
+        tipo = analisa_fator();
+        if (tipo != -1)
+            return 2; // erro
     } else if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
     {
         lexico();
         printf("\n %s ", token->lexema);
-        analisa_expressao();
+        tipo = analisa_expressao();
         if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
             {lexico(); printf("\n %s ", token->lexema);}
         else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;} //\terro
     } else if (strcmp(token->Simbolo, "sverdadeiro") == 0 || strcmp(token->Simbolo, "sfalso") == 0)
-        {lexico(); printf("\n %s ", token->lexema);}
+        {
+            tipo = -1;
+            lexico();
+            printf("\n %s ", token->lexema);
+        }
     else {printf("\terro em %s, verdadeiro ou falso esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_fator end]\n");
-}
 
+    return tipo;
+}
+/*
 void analisa_chamada_procedimento(){
     printf("\n[analisa_chamada_procedimento]\n");
     if(pesquisa_procedimento(token->lexema)){
@@ -626,7 +713,8 @@ void analisa_chamada_procedimento(){
         return;
     }
     printf("\n[analisa_chamada_procedimento end]\n");
-}
+}*/
+/*
 void analisa_chamada_funcao(){
     printf("\n[analisa_chamada_funcao]\n");
     if(pesquisa_funcao(token->lexema)){
@@ -639,7 +727,7 @@ void analisa_chamada_funcao(){
     lexico();
     printf("\n %s ", token->lexema);
     printf("\n[analisa_chamada_funcao end]\n");
-}
+}*/
 
 void analisa_subrotinas()
 {
@@ -700,9 +788,9 @@ void analisa_declaracao_funcao(){
                 printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
                     if(token->Simbolo == "Sinteiro")
-                        TS.simbolo.tipo = "funcao inteiro";
+                        TS->simbolo.tipo = "funcao inteiro";
                     else
-                        TS.simbolo.tipo = "funcao booleana";
+                        TS->simbolo.tipo = "funcao booleana";
                     lexico();
                     printf("\n %s ", token->lexema);
                     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
@@ -839,14 +927,14 @@ void defineTipoFun(char* tipo){
 
 }
 
-char* confereTipo(char* simbolo, int scope){
+char* confereTipo(char* simbolo){
     tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
     noSimbolo noAux;
     char *resp = NULL;
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0){
+        if(strcmp(noAux.simbolo, simbolo) == 0 && escopo_global <= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             strcpy(resp, noAux.tipo);
             break;
@@ -870,7 +958,7 @@ bool pesquisa_duplicvar(char* simbolo){
     do{
         noAux = popPilha(TS);
         if(strcmp(noAux.simbolo, simbolo) == 0 && (((strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global == noAux.escopo)
-                                                   ||((strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0) && escopo_global <= noAux.escopo ) )){
+                                                   ||(strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0 && escopo_global <= noAux.escopo ) )){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
@@ -914,7 +1002,7 @@ bool pesquisa_procedimento(char *funcao){
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento") && escopo_global >= noAux.escopo){
+        if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento") && escopo_global <= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
@@ -936,7 +1024,7 @@ bool pesquisa_funcao(char *funcao){
 
     do{
         noAux = popPilha(TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int")) &&  escopo_global >= noAux.escopo){
+        if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int")) &&  escopo_global <= noAux.escopo){
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
