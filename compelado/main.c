@@ -126,7 +126,8 @@ int escopo_global = 0;
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/sint10.txt","r");
     if(arquivo == NULL) {
@@ -325,10 +326,6 @@ void analisador(){
     if (strcmp(token->Simbolo, "sidentificador") == 0){
 
         insereTabela(&TS, token->lexema,"nomedeprograma", escopo_global, 0);
-        if (TS == NULL)
-            printf(" yes ");
-        else printf(" no ");
-
         lexico(); printf("\n %s ", token->lexema);
         }
     else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
@@ -376,9 +373,9 @@ void et_analisa_var(){
 void analisa_var(){
     printf("\n[analisa_var]\n");
     do{
+
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(pesquisa_duplicvar(token->lexema))) {
-
                 insereTabela(TS,token->lexema, "variavel", escopo_global, 0);
                 lexico();
                 printf("\n %s ", token->lexema);
@@ -457,33 +454,6 @@ void analisa_comando_simples(){
     else analisa_comandos();
     printf("\n[analisa_comando_simples end]\n");
 }
-/*
-void analisa_atrib_chprocedimento(){
-    printf("\n[analisa_atrib_chprocedimento]\n");
-    //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
-    analisa_chamada_procedimento();
-
-    lexico();
-    printf("\n %s ", token->lexema);
-
-
-
-    if (strcmp(token->Simbolo, "satribuicao") == 0)
-    {
-        analisa_atribuicao();
-    }
-    printf("\n[analisa_atrib_chprocedimento end]\n");
-}
-
-void analisa_atribuicao(){
-    printf("\n[analisa_atribuicao]\n");
-    lexico();
-    printf("\n %s ", token->lexema);
-    //semantic shit
-    analisa_expressao();
-    printf("\n[analisa_atribuicao end]\n");
-}
-*/
 
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
@@ -720,32 +690,6 @@ int  analisa_fator(){
 
     return tipo;
 }
-/*
-void analisa_chamada_procedimento(){
-    printf("\n[analisa_chamada_procedimento]\n");
-    if(pesquisa_procedimento(token->lexema)){
-        //gera código shiet
-    }
-    else {
-        printf("ERRO, procedimento nao existe");
-        return;
-    }
-    printf("\n[analisa_chamada_procedimento end]\n");
-}*/
-/*
-void analisa_chamada_funcao(){
-    printf("\n[analisa_chamada_funcao]\n");
-    if(pesquisa_funcao(token->lexema)){
-        //gera código shiet
-    }
-    else {
-        printf("ERRO, funcao nao existe");
-        return;
-    }
-    lexico();
-    printf("\n %s ", token->lexema);
-    printf("\n[analisa_chamada_funcao end]\n");
-}*/
 
 void analisa_subrotinas()
 {
@@ -769,7 +713,6 @@ void analisa_declaracao_procedimento(){
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(pesquisa_procedimento(token->lexema))) {
-            //insere tabela
             insereTabela(TS, token->lexema, "procedimento", escopo_global, 0);
             lexico();
             printf("\n %s ", token->lexema);
@@ -853,16 +796,18 @@ noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
     noSimbolo novoNo;
     novoNo.escopo = escopo;
     novoNo.simbolo = (char*) malloc(sizeof(char));
-    novoNo.simbolo = simbolos;
+    //novoNo.simbolo = simbolos;
+    strcpy(novoNo.simbolo, simbolos);
     novoNo.tipo = (char*) malloc(sizeof(char));
-    novoNo.tipo = tipo;
+    //novoNo.tipo = tipo;
+    strcpy(novoNo.tipo,tipo);
     return novoNo;
 }
 
 void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo){
     tabelaSimbolos* aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
 
-    if(pilha == NULL)
+    if(*pilha == NULL)
     {
         *pilha = criaPilha();
         (*pilha)->simbolo = pushNo(lexema, tipo, nivel);
@@ -873,7 +818,6 @@ void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, i
         aux->prev = *pilha;
         *pilha = aux;
     }
-
     free(aux);
 }
 
@@ -979,6 +923,7 @@ char* confereTipo(char* simbolo){
 }
 
 bool pesquisa_duplicvar(char* simbolo){
+
     tabelaSimbolos *aux = criaPilha();
     noSimbolo noAux;
     bool resp = false;
@@ -989,17 +934,22 @@ bool pesquisa_duplicvar(char* simbolo){
 
         if(strcmp(noAux.simbolo, simbolo) == 0 && (((strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global == noAux.escopo)
                                                    ||(strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0 && escopo_global <= noAux.escopo ) )){
+
             insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
         }
+
         insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
 
     }while(TS != NULL);
+
     do{
+
         noAux = popPilha(&aux);
         insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
     }while(aux != NULL);
+
     return resp;
 }
 
