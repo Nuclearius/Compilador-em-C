@@ -126,16 +126,16 @@ int escopo_global = 0;
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-    arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/sint10.txt","r");
+    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/sint10.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
     }
 
     TS = NULL;
-
+    token = createToken("", "");
     while(fgets(line,LINE_LENGTH,arquivo)){
         strcat(text, line);
         memset(line, 0, sizeof(line));
@@ -282,10 +282,13 @@ void tratarOperador(){
 
 void lexico(){
     char c = text[_index_];
-        if (c == 0)
-            token = NULL;
 
-        else if (c == '{')
+        free(token->lexema);
+        free(token->Simbolo);
+        free(token);
+
+
+        if (c == '{')
         {
             while (c!= '}' && c != 0)
             {
@@ -313,8 +316,8 @@ void lexico(){
 
 void analisador(){
     printf("\n[analise]\n");
-    lexico();
 
+    lexico();
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
@@ -983,10 +986,6 @@ bool pesquisa_duplicvar(char* simbolo){
     do{
 
         noAux = popPilha(&TS);
-        if (TS == NULL)
-            printf(" test yess ");
-
-
 
         if(strcmp(noAux.simbolo, simbolo) == 0 && (((strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global == noAux.escopo)
                                                    ||(strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0 && escopo_global <= noAux.escopo ) )){
@@ -997,7 +996,6 @@ bool pesquisa_duplicvar(char* simbolo){
         insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
 
     }while(TS != NULL);
-
     do{
         noAux = popPilha(&aux);
         insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
