@@ -105,11 +105,14 @@ bool pesquisa_procedimento(char *funcao);
 
 bool pesquisa_funcao(char *funcao);
 
+void gera(char *rotulo, char *comando, char *param1, char *param2);
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 char text[2048];
 
 FILE *arquivo;
+
+FILE *codigo;
 
 tipoToken* token = NULL;
 
@@ -119,6 +122,8 @@ tabelaSimbolos* TS;
 int _index_ = 0;
 
 int escopo_global = 0;
+
+int rotulo = 1
 
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -141,10 +146,12 @@ int main(){
         strcat(text, line);
         memset(line, 0, sizeof(line));
     }
+    codigo = fopen("codigo.txt", "w");
     analisador();
     printf("\nanalise sintatica concluida\n");
 
     fclose(arquivo);
+    fclose(codigo);
     return 0;
 
 }
@@ -333,7 +340,6 @@ void lexico(){
 
 void analisador(){
     printf("\n[analise]\n");
-
     lexico();
 
     if (strcmp(token->Simbolo, "sprograma") == 0)
@@ -571,33 +577,75 @@ void analisa_escreva(){
 
 void analisa_enquanto(){
     printf("\n[analisa_enquanto]\n");
+    int auxrot1 = rotulo, auxrot2;
+    char *rotString;
+
+    sprintf(rotString, "%d", rotulo);
+    gera(rotString, " ", " ", " ");
+    rotulo++;
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != -1)
         return; //erro, não é bool
     if (strcmp(token->Simbolo, "sfaca") == 0)
-        {lexico(); printf("\n %s ", token->lexema);}
+    {
+        auxrot2 = rotulo;
+        sprintf(rotString, "%d", rotulo);
+        gera(" ", "JMPF", rotString, " ");
+        rotulo++
+        lexico();
+        printf("\n %s ", token->lexema);
+        analisa_comando_simples();
+
+        sprintf(rotString, "%d", auxrot1);
+        gera(" ", "JMP", rotString, " ");
+        sprintf(rotString, "%d", auxrot2);
+        gera(rotString, " ", " ", " ");
+    }
     else {printf("\terro em %s, faca esperado\n", token->lexema);return;} //\terro
-    analisa_comando_simples();
+
     printf("\n[analisa_enquanto end]\n");
 }
 
 void analisa_se(){
     printf("\n[analisa_se]\n");
+
+    int auxrot, auxrot2;
+    char *rotString;
+
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != -1)
         return; //erro, não é bool
+
+    auxrot = rotulo;
+    sprintf(rotString, "%d", rotulo);
+    gera(" ", "JMPF", rotString, " ");
+    rotulo++;
+
     if (strcmp(token->Simbolo, "sentao") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, entao esperado\n", token->lexema);return;} //\terro
     analisa_comando_simples();
+
+    auxrot2 = rotulo;
+    sprintf(rotString, "%d", rotulo);
+    gera(" ", "JMP", rotString, " ");
+    rotulo++;
+
+    sprintf(rotString, "%d", auxrot);
+    gera(rotString, " ", " ", " ");
+
     if (strcmp(token->Simbolo, "ssenao") == 0)
     {
         lexico();
         printf("\n %s ", token->lexema);
         analisa_comando_simples();
     }
+
+    sprintf(rotString, "%d", auxrot2);
+    gera(rotString, " ", " ", " ");
+
     printf("\n[analisa_se end]\n");
 }
 
@@ -712,6 +760,17 @@ int  analisa_fator(){
 void analisa_subrotinas()
 {
     printf("\n[analisa_subrotinas]\n");
+    int auxrot, flag;
+    char *rotString;
+    if (strcmp(token->Simbolo,"sprocedimento")==0|| strcmp(token->Simbolo,"sfuncao")==0)
+    {
+        auxrot = rotulo;
+        sprintf(rotString, "%d", rotulo);
+        gera(" ", "JMP", rotString, " ");
+        rotulo++;
+        flag = 1;
+    }
+
     while(strcmp(token->Simbolo,"sprocedimento")==0|| strcmp(token->Simbolo,"sfuncao")==0)
     {
         if(strcmp(token->Simbolo,"sprocedimento")==0)
@@ -721,17 +780,30 @@ void analisa_subrotinas()
             {lexico(); printf("\n %s ", token->lexema);}
         else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro, ; esperado
     }
+    if (flag== 1)
+    {
+        sprintf(rotString, "%d", auxrot);
+        gera(rotString, " ", " ", " ");
+    }
+
     printf("\n[analisa_subrotinas end]\n");
 }
 
 void analisa_declaracao_procedimento(){
     printf("\n[analisa_declaracao_procedimento]\n");
+    char *rotString;
+
     lexico();
     escopo_global++;
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(pesquisa_procedimento(token->lexema))) {
-            insereTabela(TS, token->lexema, "procedimento", escopo_global, 0);
+            insereTabela(TS, token->lexema, "procedimento", escopo_global, rotulo);
+
+            printf(rotString, "%d", rotulo);
+            gera(rotString, " ", " ", " ");
+            rotulo++;
+
             lexico();
             printf("\n %s ", token->lexema);
             if (strcmp(token->Simbolo, "sponto_virgula") == 0)
@@ -757,8 +829,8 @@ void analisa_declaracao_funcao(){
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(scanPilha(token->lexema))) {
-            //InsereTabela
-            insereTabela(TS, token->lexema, "", escopo_global, 0);
+
+            insereTabela(TS, token->lexema, "", escopo_global, rotulo);
             lexico();
             escopo_global++;
             printf("\n %s ", token->lexema);
@@ -842,8 +914,6 @@ void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, i
 
 noSimbolo popPilha(tabelaSimbolos **pilha){
     noSimbolo aux;
-
-
 
     if((*pilha)->prev == NULL){
 
@@ -1041,3 +1111,9 @@ bool pesquisa_funcao(char *funcao){
     return resp;
 }
 
+
+void gera(char *rotulo, char *comando, char *param1, char *param2)
+{
+
+    fprintf ( codigo, "%s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
+}
