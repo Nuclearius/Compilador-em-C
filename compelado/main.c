@@ -127,9 +127,9 @@ int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
     //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/sint10.txt","r");
+    arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera1.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -159,6 +159,13 @@ tipoToken *createToken(char* lex, char* sim){
     newToken->Simbolo = malloc(strlen(sim));
     strcpy(newToken->Simbolo,sim);
     return newToken;
+}
+
+void freeToken()
+{
+    free(token->lexema);
+        free(token->Simbolo);
+        free(token);
 }
 
 void tratarIdentificador(){
@@ -196,6 +203,7 @@ void tratarIdentificador(){
         _index_++;
         cs[0] = text[_index_];
     }while ((cs[0] >= 65 && cs[0] <=90) || (cs[0]>= 97 && cs[0] <= 122) || (cs[0] >=48 && cs[0] <= 57) || cs[0] == '_');
+
     for (int I = 0; I < 21; I++)
     {
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
@@ -284,9 +292,6 @@ void tratarOperador(){
 void lexico(){
     char c = text[_index_];
 
-        free(token->lexema);
-        free(token->Simbolo);
-        free(token);
 
 
         if (c == '{')
@@ -301,16 +306,27 @@ void lexico(){
             _index_++;
             lexico();
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
+        {
+
+            freeToken();
             tratarIdentificador();
+        }
         else if (c >=48 && c <= 57)
+        {
+            freeToken();
             tratarDigito();
+        }
+
         else if (c == 32 || c == 10 || c == 13)
         {
             _index_++;
             lexico();
         }
         else
+        {
+            freeToken();
             tratarOperador();
+        }
         c = text[_index_];
 
 }
@@ -319,6 +335,7 @@ void analisador(){
     printf("\n[analise]\n");
 
     lexico();
+
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
@@ -376,7 +393,8 @@ void analisa_var(){
 
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(pesquisa_duplicvar(token->lexema))) {
-                insereTabela(TS,token->lexema, "variavel", escopo_global, 0);
+
+                insereTabela(&TS,token->lexema, "variavel", escopo_global, 0);
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -805,7 +823,7 @@ noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
 }
 
 void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo){
-    tabelaSimbolos* aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    tabelaSimbolos* aux = criaPilha();
 
     if(*pilha == NULL)
     {
@@ -816,6 +834,7 @@ void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, i
     else{
         aux->simbolo = pushNo(lexema, tipo, nivel);
         aux->prev = *pilha;
+
         *pilha = aux;
     }
     free(aux);
@@ -832,9 +851,10 @@ noSimbolo popPilha(tabelaSimbolos **pilha){
         *pilha = NULL;
         return aux;
     }
-
+     printf("\n aux prev test: %s \n", TS->prev->simbolo.simbolo);
     aux = (*pilha)->simbolo;
     *pilha = (*pilha)->prev;
+
     return aux;
 
 }
@@ -924,37 +944,39 @@ char* confereTipo(char* simbolo){
 
 bool pesquisa_duplicvar(char* simbolo){
 
-    tabelaSimbolos *aux = criaPilha();
+    tabelaSimbolos *aux = NULL;
     noSimbolo noAux;
     bool resp = false;
 
     do{
-
+        printf(" testing TS %s \n", TS->simbolo.simbolo);
         noAux = popPilha(&TS);
-
         if(strcmp(noAux.simbolo, simbolo) == 0 && (((strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global == noAux.escopo)
                                                    ||(strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0 && escopo_global <= noAux.escopo ) )){
 
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
+            insereTabela(&TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
             resp = true;
             break;
         }
 
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
+        insereTabela(&aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
+        printf(" testing tira TS %s \n", aux->simbolo.simbolo);
 
     }while(TS != NULL);
 
     do{
 
         noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
+        insereTabela(&TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
+        printf(" testing TS 2 %s \n", TS->simbolo.simbolo);
+        printf(" testing coloca TS %s \n", TS->simbolo.simbolo);
     }while(aux != NULL);
 
     return resp;
 }
 
 bool pesquisa_declvar(char* simbolo){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
+    tabelaSimbolos *aux = NULL;
     noSimbolo noAux;
     bool resp = false;
 
