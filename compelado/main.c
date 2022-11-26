@@ -11,7 +11,7 @@ typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
 }tipoToken;
-
+/*
 typedef struct ns{
     char* tipo;
     char* simbolo;
@@ -22,6 +22,19 @@ typedef struct pilha{
     struct pilha *prev;
     noSimbolo simbolo;
 } tabelaSimbolos;
+*/
+
+typedef struct tabelaSimbolo{
+    char lexema[30];
+    char tipo[30];
+    int nivel;
+    void* mem;
+    struct tabelaSimbolo *prev;
+}tabelaSimbolos;
+
+typedef struct pilha{
+    tabelaSimbolos *topo;
+}Topo;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* CABEÇALHOS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -79,6 +92,30 @@ void analisa_declaracao_procedimento();
 
 void analisa_declaracao_funcao();
 
+
+void iniciaPilha();
+
+void insereTabela(char lexema[], char nometabela[], int nivel, void* mem);
+
+void Desempilha();
+
+bool buscaDuplicado(char lexema[], int nivel);
+
+bool buscaVarDuplicado(char lexema[], int nivel);
+
+bool buscaVarDeclarado(char lexema[]);
+
+void printPilha();
+
+void defineTipoVar(char* tipo);
+
+int pesquisa_procedimento(char *id);
+
+int pesquisa_funcao(char *id);
+
+char* confereTipo(char* lexema);
+
+/*
 noSimbolo criaNo();
 
 tabelaSimbolos* criaPilha();
@@ -104,6 +141,7 @@ bool pesquisa_declvar(char* simbolo);
 bool pesquisa_procedimento(char *funcao);
 
 bool pesquisa_funcao(char *funcao);
+*/
 
 void gera(char *rotulo, char *comando, char *param1, char *param2);
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -118,12 +156,13 @@ tipoToken* token = NULL;
 
 tabelaSimbolos* TS;
 
+Topo *inicio;
 
 int _index_ = 0;
 
 int escopo_global = 0;
 
-int rotulo = 1
+int rotulo = 1;
 
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -131,16 +170,20 @@ int rotulo = 1
 int main(){
     char line[LINE_LENGTH];
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/sint1.txt","r");
     //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-    arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera1.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
     }
 
-    TS = NULL;
+     //Inicializa a pilha
+    iniciaPilha();
+    //Insere a primeira marca na pilha que deve estar lá. As marcas també representam a troca de nivel/escopo
+    insereTabela("#", "marca", escopo_global, 0);
+
     token = createToken("", "");
     while(fgets(line,LINE_LENGTH,arquivo)){
         strcat(text, line);
@@ -216,7 +259,9 @@ void tratarIdentificador(){
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
+
             token = createToken( ID, s);
+
             return;
         }
     }
@@ -348,7 +393,7 @@ void analisador(){
 
     if (strcmp(token->Simbolo, "sidentificador") == 0){
 
-        insereTabela(&TS, token->lexema,"nomedeprograma", escopo_global, 0);
+        insereTabela(token->lexema,"nomedeprograma", escopo_global, 0);
         lexico(); printf("\n %s ", token->lexema);
         }
     else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
@@ -398,9 +443,9 @@ void analisa_var(){
     do{
 
         if(strcmp(token->Simbolo,"sidentificador")== 0){
-            if (!(pesquisa_duplicvar(token->lexema))) {
+            if (!(buscaVarDuplicado(token->lexema, escopo_global))) {
 
-                insereTabela(&TS,token->lexema, "variavel", escopo_global, 0);
+                insereTabela(token->lexema, "variavel", escopo_global, 0);
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -482,7 +527,7 @@ void analisa_comando_simples(){
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
     //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
-    if (!pesquisa_procedimento(token->lexema))
+    if (pesquisa_procedimento(token->lexema) == -1)
         analisa_atribuicao();
     else
     {
@@ -497,7 +542,7 @@ void analisa_atrib_chprocedimento(){
 void analisa_atribuicao(){
     printf("\n[analisa_atribuicao]\n");
 
-    if (!pesquisa_declvar(token->lexema))
+    if (!buscaVarDeclarado(token->lexema))
         return;// erro, identificador inválido
 
     char *tipo = confereTipo(token->lexema);
@@ -528,7 +573,7 @@ void analisa_leia(){
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        if(pesquisa_declvar(token->lexema)) {
+        if(buscaVarDeclarado(token->lexema)) {
             if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
             lexico();
@@ -555,7 +600,7 @@ void analisa_escreva(){
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        if(pesquisa_declvar(token->lexema)) {
+        if(buscaVarDeclarado(token->lexema)) {
            if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
             lexico();
@@ -592,7 +637,7 @@ void analisa_enquanto(){
         auxrot2 = rotulo;
         sprintf(rotString, "%d", rotulo);
         gera(" ", "JMPF", rotString, " ");
-        rotulo++
+        rotulo++;
         lexico();
         printf("\n %s ", token->lexema);
         analisa_comando_simples();
@@ -719,7 +764,7 @@ int  analisa_fator(){
             lexico();
             printf("\n %s ", token->lexema);
 
-        } else if (pesquisa_declvar(token->lexema))
+        } else if (buscaVarDeclarado(token->lexema))
         {
             if (strcmp(confereTipo(token->lexema), "variavel booleano") == 0)
                 tipo = -1;
@@ -794,12 +839,12 @@ void analisa_declaracao_procedimento(){
     char *rotString;
 
     lexico();
-    escopo_global++;
+
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(pesquisa_procedimento(token->lexema))) {
-            insereTabela(TS, token->lexema, "procedimento", escopo_global, rotulo);
-
+            insereTabela(token->lexema, "procedimento", escopo_global, rotulo);
+            escopo_global++;
             printf(rotString, "%d", rotulo);
             gera(rotString, " ", " ", " ");
             rotulo++;
@@ -812,6 +857,7 @@ void analisa_declaracao_procedimento(){
                 printf("\terro em %s, \";\" esperado\n", token->lexema);
                 return;
             }
+            escopo_global--;
         }
         else{
             printf("ERRO, procedimentos com nomes iguais");
@@ -820,17 +866,16 @@ void analisa_declaracao_procedimento(){
     }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
     printf("\n[analisa_declaracao_procedimento end]\n");
-    escopo_global--;
+
 }
 void analisa_declaracao_funcao(){
     printf("\n[analisa_declaracao_funcao]\n");
     lexico();
-    escopo_global++;
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
-        if(!(scanPilha(token->lexema))) {
+        if(!(buscaDuplicado(token->lexema,escopo_global))) {
 
-            insereTabela(TS, token->lexema, "", escopo_global, rotulo);
+            insereTabela(token->lexema, "", escopo_global, rotulo);
             lexico();
             escopo_global++;
             printf("\n %s ", token->lexema);
@@ -839,9 +884,9 @@ void analisa_declaracao_funcao(){
                 printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo, "sinteiro") == 0 || strcmp(token->Simbolo, "sbooleano") == 0) {
                     if(token->Simbolo == "Sinteiro")
-                        TS->simbolo.tipo = "funcao inteiro";
+                        strcpy(TS->tipo, "funcao inteiro"); //TS->tipo = "funcao inteiro";
                     else
-                        TS->simbolo.tipo = "funcao booleana";
+                        strcpy(TS->tipo, "funcao booleana"); //TS->tipo = "funcao booleana";
                     lexico();
                     printf("\n %s ", token->lexema);
                     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
@@ -863,6 +908,159 @@ void analisa_declaracao_funcao(){
     escopo_global--;
 }
 
+//=======================================================================================================================================
+
+//Função que inicia a pilha
+void iniciaPilha(){
+    Topo *aux = (Topo*)malloc(sizeof (Topo));
+    inicio = aux;
+    inicio->topo = NULL;
+    printf("\n\n%s",inicio->topo);
+}
+
+//função que insere na tabela de simbolos(não consigo explicar ao certo ainda o que a variavel mem, prorem vou ver isso com o daniel dps, só sei que tem a ver com a VM
+void insereTabela(char lexema[], char nometabela[], int nivel, void* mem){
+    tabelaSimbolos *aux = (tabelaSimbolos*)malloc(sizeof (tabelaSimbolos));
+    strcpy(aux->lexema,lexema);
+    strcpy(aux->tipo,nometabela);
+    aux->nivel = nivel;
+    aux->mem = mem;
+
+    aux->prev = inicio->topo;
+    inicio->topo = aux;
+}
+//função que ira retirar os simbolos da pilha ate encontrar uma marca
+void Desempilha(){
+    tabelaSimbolos *aux = inicio->topo;
+    tabelaSimbolos *aux1;
+
+    while(strcmp(aux->lexema, "#")){
+        aux1 = aux->prev;
+        free(aux);
+        aux = aux1;
+    }
+
+    if(!strcmp(aux->lexema, "#")){
+        inicio->topo = aux->prev;
+        free(aux);
+    }
+    else
+        inicio->topo = aux;
+}
+//função que buscará por duplicantes. Retorna: false caso não haja duplicantes/ true no caso de duplicantes no mesmo ou mais baixo escopo
+bool buscaDuplicado(char lexema[], int nivel){
+    tabelaSimbolos *aux = inicio->topo;
+    do{
+        if(!strcmp(lexema, aux->lexema)){
+            if(aux->nivel <= nivel)
+                return true;
+        }
+        aux = aux->prev;
+    } while (aux != NULL);
+
+    return false;
+}
+//função que buscará por duplicantes. Retorna: false caso não haja duplicantes/ true no caso de duplicantes variáveis no mesmo nível ou algo além de váriavel em nível mais baixo
+bool buscaVarDuplicado(char lexema[], int nivel){
+    tabelaSimbolos *aux = inicio->topo;
+    do{
+
+        if(strcmp(aux->lexema, lexema) == 0)
+        {
+            if ((strcmp(aux->tipo, "variavel inteiro" ) == 0 || strcmp(aux->tipo, "variavel booleano" ) == 0 || strcmp(aux->tipo, "variavel" ) == 0))
+            {
+                if(aux->nivel == nivel)
+                    return true;
+            } else if ( aux->nivel <= nivel)
+                    return true;
+        }
+
+        aux = aux->prev;
+    } while (aux != NULL);
+
+    return false;
+}
+
+bool buscaVarDeclarado(char lexema[]){
+    tabelaSimbolos *aux = inicio->topo;
+    do{
+
+        if(strcmp(aux->lexema, lexema) == 0 && (strcmp(aux->tipo, "variável inteiro" ) == 0 || strcmp(aux->tipo, "variável booleano" ) == 0))
+            return true;
+        aux = aux->prev;
+    }while(aux != NULL);
+    return false;
+}
+
+void defineTipoVar(char* tipo){
+    tabelaSimbolos *aux = NULL;
+    char tipoFull[20] = "variavel ";
+    do{
+        strcat(tipoFull,tipo);
+        strcpy(TS->tipo, tipoFull);
+        aux->prev = aux;
+        aux = TS;
+        TS = TS->prev;
+    }while(strcmp(TS->tipo,"variavel") == 0);
+
+    do {
+       insereTabela(aux->lexema, tipoFull,aux->nivel, aux->mem);
+       aux= aux->prev;
+    } while (aux != NULL);
+}
+
+int pesquisa_procedimento(char *id){
+    tabelaSimbolos *aux = inicio->topo;
+
+    do{
+        if(strcmp(aux->lexema, id) == 0 && strcmp(aux->tipo, "procedimento"))
+            return 1;
+      aux = aux->prev;
+    }while(aux != NULL);
+    return -1;
+}
+
+int pesquisa_funcao(char *id){
+    tabelaSimbolos *aux = inicio->topo;
+
+    do{
+        if(strcmp(aux->lexema, id) == 0 && (strcmp(aux->tipo, "funcao int") || strcmp(aux->tipo, "funcao bool")))
+            return 1;
+      aux = aux->prev;
+    }while(aux != NULL);
+    return -1;
+}
+
+char* confereTipo(char* lexema){
+    tabelaSimbolos *aux = inicio->topo;
+    char *resp = NULL;
+
+    do{
+        if(strcmp(aux->lexema, lexema) == 0){
+            strcpy(resp, aux->tipo);
+            break;
+        }
+        aux = aux->prev;
+    }while(aux != NULL);
+
+    return resp;
+
+}
+
+//printa a tabela de simbolos completa
+void printPilha(){
+    tabelaSimbolos *aux = inicio->topo;
+    do{
+        printf("\n\n\t\tLexema:%s",aux->lexema);
+        printf("\n\n\t\tTipo:%s",aux->tipo);
+        printf("\n\n\t\tNivel:%d",aux->nivel);
+        printf("\n\n\t\t/--------/");
+        aux = aux->prev;
+    } while (aux != NULL);
+
+}
+
+/*
 //Função cria e prepara um nó para iniciar uma pilha
 noSimbolo criaNo(){
     noSimbolo novoNo;
@@ -893,6 +1091,7 @@ noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
     strcpy(novoNo.tipo,tipo);
     return novoNo;
 }
+
 
 void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo){
     tabelaSimbolos* aux = criaPilha();
@@ -1110,7 +1309,7 @@ bool pesquisa_funcao(char *funcao){
 
     return resp;
 }
-
+*/
 
 void gera(char *rotulo, char *comando, char *param1, char *param2)
 {
