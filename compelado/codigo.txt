@@ -1,10 +1,20 @@
- 	JMP	1	 	
-2	 	 	 	
- 	JMP	3	 	
-4	 	 	 	
-5	 	 	 	
- 	JMPF	6	 	
- 	JMP	7	 	
-6	 	 	 	
-7	 	 	 	
-3	 	 	 	
+	START			
+ 	JMP	2	 	
+3	NULL	 	 	
+ 	JMP	4	 	
+5	NULL	 	 	
+	CALL	3		
+	LOAD	0		
+6	NULL	 	 	
+	LDV	8		
+	LDC	10		
+ 	JMPF	7	 	
+ 	JMP	8	 	
+7	NULL	 	 	
+8	NULL	 	 	
+4	NULL	 	 	
+	LDV	4		
+	LDV	5		
+2	NULL	 	 	
+	CALL	3		
+	LOAD	0		

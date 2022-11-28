@@ -24,6 +24,16 @@ typedef struct pilha{
 } tabelaSimbolos;
 */
 
+typedef struct posfixa {
+    char valor[10];
+    int precedencia;
+    struct posfixa *prev;
+}psPilha;
+
+typedef struct posfixaTopo{
+    psPilha *topo;
+}psTopo;
+
 typedef struct tabelaSimbolo{
     char lexema[30];
     char tipo[30];
@@ -103,7 +113,7 @@ bool buscaDuplicado(char lexema[], int nivel);
 
 bool buscaVarDuplicado(char lexema[], int nivel);
 
-bool buscaVarDeclarado(char lexema[]);
+int buscaVarDeclarado(char lexema[]);
 
 void printPilha();
 
@@ -122,7 +132,7 @@ tabelaSimbolos* criaPilha();
 
 noSimbolo pushNo(char* simbolos, char* tipo, int escopo);
 
-void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo);
+void 4(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo);
 
 noSimbolo popPilha(tabelaSimbolos **pilha);
 
@@ -158,11 +168,17 @@ tabelaSimbolos* TS;
 
 Topo *inicio;
 
+psPilha* PS;
+
+psTopo *psInicio;
+
 int _index_ = 0;
 
 int escopo_global = 0;
 
 int rotulo = 1;
+
+int mem = 1;
 
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -182,10 +198,11 @@ int main(){
 
      //Inicializa a pilha
     iniciaPilha();
+    iniciaPosFixa();
     //Insere a primeira marca na pilha que deve estar lá. As marcas també representam a troca de nivel/escopo
 
-    insereTabela("final", "final", -1, 0);
-    insereTabela("#", "marca", escopo_global, 0);
+    insereTabela("final", "final", -1, NULL);
+    insereTabela("#", "marca", escopo_global, NULL);
 
 
     token = createToken("", "");
@@ -195,6 +212,8 @@ int main(){
     }
     codigo = fopen("codigo.txt", "w");
     resultado = analisador();
+    printf("\nPilha final: \n");
+    printPilha();
     if (resultado == 0)
         printf("\nanalise concluida\n");
     else printf("\nerro na analise\n");
@@ -302,31 +321,31 @@ void tratarOperador(){
     c[0] = text[_index_];
     _index_++;
     switch(c[0]){
-        case '+': //token = createToken( c, "smais");
+        case '+':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "smais"); break;
-        case '-': //token = createToken( c, "smenos");
+        case '-':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "smenos"); break;
-        case '*': //token = createToken( c, "smult");
+        case '*':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "smult"); break;
-        case ';': //token = createToken( c, "sponto_virgula");
+        case ';':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "sponto_virgula");break;
-        case ',': //token = createToken( c, "svirgula");
+        case ',':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "svirgula"); break;
-        case '.': //token = createToken( c, "sponto");
+        case '.':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "sponto"); break;
-        case '(': //token = createToken( c, "sabre_parenteses");
+        case '(':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "sabre_parenteses"); break;
-        case ')': //token = createToken( c, "sfecha_parenteses");
+        case ')':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "sfecha_parenteses"); break;
-        case '=': //token = createToken( c, "sig");
+        case '=':
                     strcpy(token->lexema, c);
                     strcpy(token->Simbolo, "sig"); break;
         case '!':
@@ -336,7 +355,7 @@ void tratarOperador(){
             else
                 {
                     _index_++;
-                    //token = createToken( "!=", "sdif");
+
                     strcpy(token->lexema,"!=");
                     strcpy(token->Simbolo, "sdif");
                 }
@@ -344,14 +363,14 @@ void tratarOperador(){
         case ':':
             if (text[_index_] != '=')
             {
-                //token = createToken( c, "sdoispontos");
+
                 strcpy(token->lexema,c);
                 strcpy(token->Simbolo, "sdoispontos");
             }
             else
                 {
                     _index_++;
-                    //token = createToken( ":=", "satribuicao");
+
                     strcpy(token->lexema,":=");
                     strcpy(token->Simbolo, "satribuicao");
 
@@ -360,14 +379,14 @@ void tratarOperador(){
         case '<':
             if (text[_index_] != '=')
             {
-                //token = createToken( c, "smenor");
+
                 strcpy(token->lexema,c);
                     strcpy(token->Simbolo, "smenor");
             }
             else
                 {
                     _index_++;
-                    //token = createToken( "<=", "smenorig");
+
                     strcpy(token->lexema,"<=");
                     strcpy(token->Simbolo, "smenorig");
                 }
@@ -375,14 +394,14 @@ void tratarOperador(){
         case '>':
             if (text[_index_] != '=')
             {
-                //token = createToken( c, "smaior");
+
                 strcpy(token->lexema,c);
                 strcpy(token->Simbolo, "smaior");
             }
             else
             {
                 _index_++;
-                //token = createToken( ">=", "smaiorig");
+
                 strcpy(token->lexema,">=");
                 strcpy(token->Simbolo, "smaiorig");
             }
@@ -411,12 +430,12 @@ void lexico(){
         } else if ((c >= 65 && c <=90)|| (c >= 97 && c <= 122))
         {
 
-            //freeToken();
+
             tratarIdentificador();
         }
         else if (c >=48 && c <= 57)
         {
-            //freeToken();
+
             tratarDigito();
         }
 
@@ -431,7 +450,7 @@ void lexico(){
         }
         else
         {
-            //freeToken();
+
             tratarOperador();
         }
         c = text[_index_];
@@ -448,8 +467,9 @@ int analisador(){
 
     if (strcmp(token->Simbolo, "sidentificador") == 0){
 
-
-        insereTabela(token->lexema,"nomedeprograma", escopo_global, 0);
+        insereTabela(token->lexema,"nomedeprograma", escopo_global, rotulo);
+        gera("","START", "", "");
+        rotulo++;
         lexico(); printf("\n %s ", token->lexema);
         }
     else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
@@ -503,7 +523,8 @@ void analisa_var(){
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(buscaVarDuplicado(token->lexema, escopo_global))) {
 
-                insereTabela(token->lexema, "variavel", escopo_global, 0);
+                insereTabela(token->lexema, "variavel", escopo_global, mem);
+                mem++;
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -600,10 +621,7 @@ void analisa_atrib_chprocedimento(){
 
 void analisa_atribuicao(){
     printf("\n[analisa_atribuicao]\n");
-
-    printf("\n super teste \n");
-    printPilha();
-    if (!buscaVarDeclarado(token->lexema))
+    if (!buscaVarDeclarado(token->lexema) && pesquisa_funcao(token->lexema) != 1)
         return;// erro, identificador inválido
 
     char *tipo = confereTipo(token->lexema);
@@ -640,7 +658,6 @@ void analisa_leia(){
 
             if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
-
             lexico();
                printf (" testing leia ");
             printf("\n %s ", token->lexema);
@@ -666,15 +683,15 @@ void analisa_escreva(){
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        if(buscaVarDeclarado(token->lexema)) {
-           if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
+        if(buscaVarDeclarado(token->lexema) || pesquisa_funcao(token->lexema) == 1) {
+           if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0 || strcmp(confereTipo(token->lexema), "funcao inteiro") == 0)
             {
             lexico();
             printf("\n %s ", token->lexema);
-            } else   {printf("\terro semantico em %s, tipo de variavel invalido\n", token->lexema);return;} //erro, variável inválida
+            } else   {printf("\terro semantico em %s, tipo invalido\n", token->lexema);return;} //erro, variável inválida
         }
         else{
-            printf("ERRO, variavel não encontrada");
+            printf("ERRO, variavel ou funcao não encontrada");
             return;
         }
     }
@@ -692,7 +709,7 @@ void analisa_enquanto(){
     char rotString[5];
 
     sprintf(rotString, "%d", rotulo);
-    gera(rotString, " ", " ", " ");
+    gera(rotString, "NULL", " ", " ");
     rotulo++;
     lexico();
     printf("\n %s ", token->lexema);
@@ -711,7 +728,7 @@ void analisa_enquanto(){
         sprintf(rotString, "%d", auxrot1);
         gera(" ", "JMP", rotString, " ");
         sprintf(rotString, "%d", auxrot2);
-        gera(rotString, " ", " ", " ");
+        gera(rotString, "NULL", " ", " ");
     }
     else {printf("\terro em %s, faca esperado\n", token->lexema);return;} //\terro
 
@@ -745,7 +762,7 @@ void analisa_se(){
     rotulo++;
 
     sprintf(rotString, "%d", auxrot);
-    gera(rotString, " ", " ", " ");
+    gera(rotString, "NULL", " ", " ");
 
     if (strcmp(token->Simbolo, "ssenao") == 0)
     {
@@ -755,7 +772,7 @@ void analisa_se(){
     }
 
     sprintf(rotString, "%d", auxrot2);
-    gera(rotString, " ", " ", " ");
+    gera(rotString, "NULL", " ", " ");
 
     printf("\n[analisa_se end]\n");
 }
@@ -827,26 +844,40 @@ int analisa_termo(){
 int  analisa_fator(){
     printf("\n[analisa_fator]\n");
     int tipo = 0; // 0 = int, -1 = bool;
+    int mem;
+    char memString[5];
     if (strcmp(token->Simbolo, "sidentificador") == 0) {
-
-        if (pesquisa_funcao(token->lexema) == 1)
+        mem = pesquisa_funcao(token->lexema);
+        if (mem != -1)
         {
             if (strcmp(confereTipo(token->lexema), "funcao booleana") == 0)
                 tipo = -1;
-            //gera codigo
+
+            sprintf(memString,"%d", mem);
+            gera("", "CALL", memString, "");
+            gera("", "LOAD", "0", "");
+
             lexico();
             printf("\n %s ", token->lexema);
 
-        } else if (buscaVarDeclarado(token->lexema))
+        } else
         {
+            mem = buscaVarDeclarado(token->lexema);
+            if (mem != -1)
+            {
+                if (strcmp(confereTipo(token->lexema), "variavel booleano") == 0)
+                    tipo = -1;
 
-            if (strcmp(confereTipo(token->lexema), "variavel booleano") == 0)
-                tipo = -1;
-            lexico();
-            printf("\n %s ", token->lexema);
-        } else {printf("\terro semantico em %s, identificador nao declarado\n", token->lexema);return 2;} //erro
+                sprintf(memString,"%d", mem);
+                gera("","LDV", memString, "");
+
+                lexico();
+                printf("\n %s ", token->lexema);
+            } else {printf("\terro semantico em %s, identificador nao declarado\n", token->lexema);return 2;} //erro
+        }
     }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
+        gera("", "LDC",token->lexema, "");
         lexico();
         printf("\n %s ", token->lexema);
     } else if (strcmp(token->Simbolo, "snao") == 0)
@@ -905,7 +936,7 @@ void analisa_subrotinas()
     if (flag== 1)
     {
         sprintf(rotString, "%d", auxrot);
-        gera(rotString, " ", " ", " ");
+        gera(rotString, "NULL", " ", " ");
     }
 
     printf("\n[analisa_subrotinas end]\n");
@@ -922,11 +953,11 @@ void analisa_declaracao_procedimento(){
         if(!buscaDuplicado(token->lexema,escopo_global)) {
 
             insereTabela(token->lexema, "procedimento", escopo_global, rotulo);
-            insereTabela("#", "marca", escopo_global, 0);
+            insereTabela("#", "marca", escopo_global, NULL);
             escopo_global++;
 
             sprintf(rotString, "%d", rotulo);
-            gera(rotString, " ", " ", " ");
+            gera(rotString, "NULL", " ", " ");
             rotulo++;
 
             lexico();
@@ -964,7 +995,7 @@ void analisa_declaracao_funcao(){
 
 
             sprintf(rotString, "%d", rotulo);
-            gera(rotString, " ", " ", " ");
+            gera(rotString, "NULL", " ", " ");
             rotulo++;
 
             lexico();
@@ -977,7 +1008,7 @@ void analisa_declaracao_funcao(){
                         strcpy(inicio->topo->tipo, "funcao inteiro"); //TS->tipo = "funcao inteiro";
                     else
                         strcpy(inicio->topo->tipo, "funcao booleana"); //TS->tipo = "funcao booleana";
-                    insereTabela("#", "marca", escopo_global, 0);
+                    insereTabela("#", "marca", escopo_global, NULL);
                     escopo_global++;
                     lexico();
                     printf("\n %s ", token->lexema);
@@ -1006,6 +1037,8 @@ void analisa_declaracao_funcao(){
 
 }
 
+//=======================================================================================================================================
+// semantico
 //=======================================================================================================================================
 
 //Função que inicia a pilha
@@ -1087,15 +1120,15 @@ bool buscaVarDuplicado(char lexema[], int nivel){
     return false;
 }
 
-bool buscaVarDeclarado(char lexema[]){
+int buscaVarDeclarado(char lexema[]){
     tabelaSimbolos *aux = inicio->topo;
 
     do{
         if(strcmp(aux->lexema, lexema) == 0 && (strcmp(aux->tipo, "variavel inteiro" ) == 0 || strcmp(aux->tipo, "variavel booleano" ) == 0))
-            return true;
+            return aux->mem;
         aux = aux->prev;
     }while(aux->nivel != -1);
-    return false;
+    return -1;
 }
 
 void defineTipoVar(char* tipo){
@@ -1130,7 +1163,7 @@ int pesquisa_procedimento(char *id){
 
     do{
         if(strcmp(aux->lexema, id) == 0 && strcmp(aux->tipo, "procedimento") == 0)
-            return 1;
+            return aux->mem;
       aux = aux->prev;
     }while(aux != NULL);
     return -1;
@@ -1141,7 +1174,7 @@ int pesquisa_funcao(char *id){
 
     do{
         if(strcmp(aux->lexema, id) == 0 && (strcmp(aux->tipo, "funcao inteiro") == 0 || strcmp(aux->tipo, "funcao booleana") == 0))
-            return 1;
+            return aux->mem;
       aux = aux->prev;
     }while(aux != NULL);
 
@@ -1173,265 +1206,138 @@ void printPilha(){
         printf("\n\n\t\tLexema:%s",aux->lexema);
         printf("\n\n\t\tTipo:%s",aux->tipo);
         printf("\n\n\t\tNivel:%d",aux->nivel);
+        printf("\n\n\t\tmem:%d",aux->mem);
         printf("\n\n\t\t/--------/");
         aux = aux->prev;
     } while (aux != NULL);
 
 }
 
-/*
-//Função cria e prepara um nó para iniciar uma pilha
-noSimbolo criaNo(){
-    noSimbolo novoNo;
-    novoNo.escopo = NULL;
-    novoNo.simbolo = (char*) malloc(sizeof(char));
-    novoNo.simbolo = NULL;
-    novoNo.tipo = (char*) malloc(sizeof(char));
-    novoNo.tipo = NULL;
-    return novoNo;
 
-}
-//Cria uma nova pilha
-tabelaSimbolos* criaPilha(){
-    tabelaSimbolos* pilhaNova = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    pilhaNova->simbolo = criaNo();
-    pilhaNova->prev = NULL;
-    return pilhaNova;
+//=======================================================================================================================================
+// geração de código
+//=======================================================================================================================================
+
+void iniciaPosFixa(){
+    psTopo *aux = (psTopo*)malloc(sizeof (psTopo));
+    psInicio = aux;
+    psInicio->topo = NULL;
+    printf("\n\n%s",psInicio->topo);
 }
 
-noSimbolo pushNo(char* simbolos, char* tipo, int escopo){
-    noSimbolo novoNo;
-    novoNo.escopo = escopo;
-    novoNo.simbolo = (char*) malloc(sizeof(char));
-    //novoNo.simbolo = simbolos;
-    strcpy(novoNo.simbolo, simbolos);
-    novoNo.tipo = (char*) malloc(sizeof(char));
-    //novoNo.tipo = tipo;
-    strcpy(novoNo.tipo,tipo);
-    return novoNo;
+// insere na pilha pos fixa
+void inserePosFixa(char valor[], int prec){
+    psPilha *aux = (psPilha*)malloc(sizeof (psPilha));
+    printf ("\n  == colocando na pilha %s  %d==  \n", valor, strlen(aux->valor));
+
+    strcpy(aux->valor,valor);
+    aux->precedencia = prec;
+
+    aux->prev = psInicio->topo;
+    psInicio->topo = aux;
+    printPosFixa();
 }
 
+// popa e coloca na saida
+char* popPosFixa()
+{
+    psPilha *aux = psInicio->topo;
+    psPilha *aux1;
+    char *res;
 
-void insereTabela(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo){
-    tabelaSimbolos* aux = criaPilha();
-
-    if(*pilha == NULL)
-    {
-        *pilha = criaPilha();
-        (*pilha)->simbolo = pushNo(lexema, tipo, nivel);
-
-    }
-    else{
-        aux->simbolo = pushNo(lexema, tipo, nivel);
-        aux->prev = *pilha;
-
-        *pilha = aux;
-    }
+    strcpy(res, aux->valor);
+    aux1 = aux->prev;
     free(aux);
+    aux = aux1;
+    psInicio->topo = aux;
+    return res;
 }
 
-noSimbolo popPilha(tabelaSimbolos **pilha){
-    noSimbolo aux;
+void insereOperador(char op[])
+{
+    int precedencia = -1;
 
-    if((*pilha)->prev == NULL){
+    char relacionais[6][6] = {"CME", "CMA", "CEQ", "CDIF", "CMEQ", "CMAQ"};
 
-        aux = (*pilha)->simbolo;
-        *pilha = NULL;
-        return aux;
+    if(strcmp(op, "(") == 0)
+        inserePosFixa(op, -1);
+    else{
+
+        if (strcmp(op,"POS") == 0 || strcmp(op,"INV") == 0)
+            precedencia = 6;
+        else if (strcmp(op,"MULT") == 0 || strcmp(op,"DIV") == 0)
+            precedencia = 5;
+        else if (strcmp(op,"ADD") == 0 || strcmp(op,"SUB") == 0)
+            precedencia = 4;
+        else if (strcmp(op,"NEG") == 0)
+            precedencia = 2;
+        else if (strcmp(op,"AND") == 0)
+            precedencia = 1;
+        else if ( strcmp(op,"OR") == 0)
+            precedencia = 0;
+        else{
+            for (int I = 0; I< 6; I++)
+            {
+                if (strcmp(relacionais[I], op) == 0)
+                {
+                    precedencia = 3;
+                    break;
+                }
+            }
+        }
+        if (precedencia == -1)
+        {
+            printf(" WTF DUDE ");
+        }
+
+        while (psInicio->topo != NULL && psInicio->topo->precedencia >= precedencia && strcmp(psInicio->topo->valor, "(") != 0)
+        {
+
+            printf ("\n testing yo: %s e %s\n", op, psInicio->topo->valor);
+            gera("", popPosFixa(), "", "");
+        }
+        inserePosFixa(op, precedencia);
+
     }
-     printf("\n aux prev test: %s \n", TS->prev->simbolo.simbolo);
-    aux = (*pilha)->simbolo;
-    *pilha = (*pilha)->prev;
-
-    return aux;
-
 }
 
-bool scanPilha(char* simbolo){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    noSimbolo noAux;
-    bool resp = false;
+//popa até o final dos parenteses
+void popParanteses ()
+{
+    while(strcmp(psInicio->topo->valor, "(") != 0)
+    {
 
-    do{
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            resp = true;
-            break;
-        }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(TS->simbolo.escopo != NULL);
-    do{
-        noAux = popPilha(aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
+        gera("", popPosFixa(),"","");
 
-    return resp;
+    }
+    popPosFixa();
+}
+
+void popAll()
+{
+    while(psInicio->topo != NULL)
+    {
+        printf ( " pop! ");
+        if (strcmp(psInicio->topo->valor, "(") != 0)
+            gera("", popPosFixa(), "", "");
+    }
 }
 
 
-
-
-void defineTipoVar(char* tipo){
-    tabelaSimbolos *aux = criaPilha();
-    noSimbolo noAux;
-    char tipoFull[20] = "variavel ";
-    do{
-
-        noAux = popPilha(&TS);
-        strcat(tipoFull,tipo);
-        insereTabela(aux,noAux.simbolo,tipoFull, noAux.escopo, 0);
-    }while(strcmp(TS->simbolo.tipo,"variavel") == 0);
-
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->prev != NULL);
-
-}
-
-void defineTipoFun(char* tipo){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    noSimbolo noAux;
-
-    do{
-        noAux = popPilha(&TS);
-        strcat(noAux.tipo," ");
-        strcat(noAux.tipo,tipo);
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(strcmp(TS->simbolo.tipo,"funcao") == 0);
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
-
-}
-
-char* confereTipo(char* simbolo){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    noSimbolo noAux;
-    char *resp = NULL;
-
-    do{
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0 && escopo_global <= noAux.escopo){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            strcpy(resp, noAux.tipo);
-            break;
-        }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(TS->simbolo.escopo != NULL);
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
-
-    return resp;
-
-}
-
-bool pesquisa_duplicvar(char* simbolo){
-
-    tabelaSimbolos *aux = NULL;
-    noSimbolo noAux;
-    bool resp = false;
-
-    do{
-        printf(" testing TS %s \n", TS->simbolo.simbolo);
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0 && (((strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global == noAux.escopo)
-                                                   ||(strcmp(noAux.tipo, "variável inteiro" ) != 0 && strcmp(noAux.tipo, "variável booleano" ) != 0 && escopo_global <= noAux.escopo ) )){
-
-            insereTabela(&TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            resp = true;
-            break;
-        }
-
-        insereTabela(&aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-        printf(" testing tira TS %s \n", aux->simbolo.simbolo);
-
-    }while(TS != NULL);
-
-    do{
-
-        noAux = popPilha(&aux);
-        insereTabela(&TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-        printf(" testing TS 2 %s \n", TS->simbolo.simbolo);
-        printf(" testing coloca TS %s \n", TS->simbolo.simbolo);
-    }while(aux != NULL);
-
-    return resp;
-}
-
-bool pesquisa_declvar(char* simbolo){
-    tabelaSimbolos *aux = NULL;
-    noSimbolo noAux;
-    bool resp = false;
-
-    do{
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, simbolo) == 0 && (strcmp(noAux.tipo, "variável inteiro" ) == 0 || strcmp(noAux.tipo, "variável booleano" ) == 0) &&  escopo_global <= noAux.escopo){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            resp = true;
-            break;
-        }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(TS->simbolo.escopo != NULL);
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
-
-    return resp;
-}
-
-bool pesquisa_procedimento(char *funcao){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    noSimbolo noAux;
-    bool resp = false;
-
-    do{
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && strcmp(noAux.tipo, "procedimento") && escopo_global <= noAux.escopo){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            resp = true;
-            break;
-        }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(TS->simbolo.escopo != NULL);
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
-
-    return resp;
-}
-
-bool pesquisa_funcao(char *funcao){
-    tabelaSimbolos *aux = (tabelaSimbolos*) malloc(sizeof(tabelaSimbolos));
-    noSimbolo noAux;
-    bool resp = false;
-
-    do{
-        noAux = popPilha(&TS);
-        if(strcmp(noAux.simbolo, funcao) == 0 && (strcmp(noAux.tipo, "funcao bool") || strcmp(noAux.tipo, "funcao int")) &&  escopo_global <= noAux.escopo){
-            insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-            resp = true;
-            break;
-        }
-        insereTabela(aux,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(TS->simbolo.escopo != NULL);
-    do{
-        noAux = popPilha(&aux);
-        insereTabela(TS,noAux.simbolo,noAux.tipo, noAux.escopo, 0);
-    }while(aux->simbolo.escopo != NULL);
-
-    return resp;
-}
-*/
 
 void gera(char *rotulo, char *comando, char *param1, char *param2)
 {
 
     fprintf ( codigo, "%s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
+}
+
+void printPosFixa(){
+    psPilha *aux = psInicio->topo;
+    do{
+        printf("\n\n\t\tvalor:%s",aux->valor);
+        printf("\n\n\t\tpreced:%d",aux->precedencia);
+        printf("\n\n\t\t/--------/");
+        aux = aux->prev;
+    } while (aux != NULL);
+
 }
