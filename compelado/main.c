@@ -181,16 +181,17 @@ int rotulo = 1;
 int mem = 1;
 
 
+
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
     char line[LINE_LENGTH];
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera2.txt","r");
     //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
-    arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
+    //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -460,7 +461,7 @@ void lexico(){
 int analisador(){
     printf("\n[analise]\n");
     lexico();
-
+    char memString[5];
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
@@ -469,6 +470,7 @@ int analisador(){
 
         insereTabela(token->lexema,"nomedeprograma", escopo_global, rotulo);
         gera("","START", "", "");
+        gera ("", "ALLOC", "1", "");
         rotulo++;
         lexico(); printf("\n %s ", token->lexema);
         }
@@ -480,7 +482,11 @@ int analisador(){
     {
         lexico();
         if (token == NULL)
+        {
+            sprintf(memString, "%d", mem);
+            gera("", "DALLOC", memString, "");
             return 0; // sucesso
+        }
         else {printf("\terro em %s, final de codigo esperado\n", token->lexema);return;}// \terro
     } else {printf("\terro em %s, \".\" esperado\n", token->lexema);return;} //\terro
 }
@@ -518,6 +524,8 @@ void et_analisa_var(){
 
 void analisa_var(){
     printf("\n[analisa_var]\n");
+    int memLocal = 0;
+    char memLocalString[5];
     do{
 
         if(strcmp(token->Simbolo,"sidentificador")== 0){
@@ -525,6 +533,7 @@ void analisa_var(){
 
                 insereTabela(token->lexema, "variavel", escopo_global, mem);
                 mem++;
+                memLocal++;
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -534,6 +543,7 @@ void analisa_var(){
             }
         }
         else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}
+
         if(strcmp(token->Simbolo,"svirgula")== 0 || strcmp(token->Simbolo,"sdoispontos")== 0)
         {
             if (strcmp(token->Simbolo,"svirgula")== 0)
@@ -545,6 +555,8 @@ void analisa_var(){
             }
         } else {printf("\terro em %s, \",\" ou \":\" esperado\n", token->lexema);return;} //\terro , ou : esperado
     }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
+    sprintf(memLocalString, "%d", memLocal);
+    gera("", "ALLOC", memLocalString, "");
     lexico();
     printf("\n %s ", token->lexema);
     analisa_tipo();
@@ -621,8 +633,14 @@ void analisa_atrib_chprocedimento(){
 
 void analisa_atribuicao(){
     printf("\n[analisa_atribuicao]\n");
-    if (!buscaVarDeclarado(token->lexema) && pesquisa_funcao(token->lexema) != 1)
-        return;// erro, identificador inválido
+    //if (buscaVarDeclarado(token->lexema) == -1 && pesquisa_funcao(token->lexema) != 1)
+    char memString[5];
+    int mem = buscaVarDeclarado(token->lexema);
+
+    if (mem == -1)
+    {
+        printf("\terro semantico em %s, variavel nao encontrada \n", token->lexema);return;// erro, identificador inválido
+    }
 
     char *tipo = confereTipo(token->lexema);
 
@@ -637,8 +655,11 @@ void analisa_atribuicao(){
     popAll();
     if (exp_tipo == 2)
         { printf("\terro semantico em %s, expressao invalida \n", token->lexema);return;}
-    if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
+    //if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
+    if ((strcmp(tipo, "variavel booleano")  == 0 && exp_tipo == -1)||(strcmp(tipo, "variavel inteiro") == 0  && exp_tipo == 0))
     {
+        sprintf(memString, "%d", mem);
+        gera("", "STR", memString, "");
         printf("\n[analisa_atribuicao end]\n");
         return; // sem erro
     }
@@ -650,17 +671,23 @@ void analisa_atribuicao(){
 void analisa_leia(){
     printf("\n[analisa_leia]\n");
     lexico();
+    int mem;
+    char memString[5];
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        if(buscaVarDeclarado(token->lexema)) {
+        mem = buscaVarDeclarado(token->lexema);
+        if(mem != -1) {
             if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
+                sprintf(memString,"%d",mem);
+                gera("","RD", "", "");
+                gera("","STR",memString, "");
 
-            lexico();
-            printf("\n %s ", token->lexema);
+                lexico();
+                printf("\n %s ", token->lexema);
             } else {printf("\terro semantico em %s, tipo de variavel invalido\n", token->lexema);return;} //erro, variável inválida
         }
         else{
@@ -677,17 +704,27 @@ void analisa_leia(){
 
 void analisa_escreva(){
     printf("\n[analisa_escreva]\n");
+    int mem;
+    char memString[5];
+
     lexico();
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
-        if(buscaVarDeclarado(token->lexema) || pesquisa_funcao(token->lexema) == 1) {
-           if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0 || strcmp(confereTipo(token->lexema), "funcao inteiro") == 0)
+        mem = buscaVarDeclarado(token->lexema);
+        //if(buscaVarDeclarado(token->lexema) != -1 || pesquisa_funcao(token->lexema) == 1)
+        if(mem != -1) {
+           //if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0 || strcmp(confereTipo(token->lexema), "funcao inteiro") == 0)
+            if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
-            lexico();
-            printf("\n %s ", token->lexema);
+                sprintf(memString,"%d",mem);
+                gera("","LDV",memString, "");
+                gera("","PRN","","");
+
+                lexico();
+                printf("\n %s ", token->lexema);
             } else   {printf("\terro semantico em %s, tipo invalido\n", token->lexema);return;} //erro, variável inválida
         }
         else{
@@ -1301,10 +1338,11 @@ char* popPosFixa()
 {
     psPilha *aux = psInicio->topo;
     psPilha *aux1;
-    char *res;
+    char *res = malloc(6);
 
-    printf ("\n teste fator %s\n", aux->valor);
+
     strcpy(res, aux->valor);
+    printf ("\n teste fator %s\n", aux->valor);
 
     aux1 = aux->prev;
     free(aux);
@@ -1366,7 +1404,7 @@ void insereOperador(char op[])
 void popParanteses ()
 {
 
-    while(strcmp(psInicio->topo->valor, "(") != 0)
+    while(psInicio->topo != NULL && strcmp(psInicio->topo->valor, "(") != 0)
     {
         gera("", popPosFixa(),"","");
 

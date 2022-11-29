@@ -24,7 +24,7 @@ var a,b,s: inteiro;
  
  inicio  {corpo da funcao soma}
   loop;                          
-  soma:= c+a;
+  c:= c+a;
  fim;                                
                                       
 

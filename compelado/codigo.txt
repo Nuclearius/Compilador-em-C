@@ -1,13 +1,32 @@
 	START			
+	ALLOC	1		
+	ALLOC	3		
  	JMP	2	 	
 3	NULL	 	 	
+	ALLOC	3		
+	ALLOC	1		
  	JMP	4	 	
 5	NULL	 	 	
+	RD			
+	STR	4		
+	RD			
+	STR	5		
 	CALL	3		
 	LOAD	0		
+	STR	6		
+	LDV	6		
+	PRN			
 6	NULL	 	 	
+	ALLOC	1		
+	RD			
+	STR	8		
 	LDV	8		
 	LDC	10		
+	CME			
+	LDV	8		
+	LDC	2		
+	CMAQ			
+	AND			
  	JMPF	7	 	
  	JMP	8	 	
 7	NULL	 	 	
@@ -15,6 +34,12 @@
 4	NULL	 	 	
 	LDV	4		
 	LDV	5		
+	ADD			
+	STR	4		
 2	NULL	 	 	
 	CALL	3		
 	LOAD	0		
+	STR	3		
+	LDV	3		
+	PRN			
+	DALLOC	9		
