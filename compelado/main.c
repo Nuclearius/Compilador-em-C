@@ -462,6 +462,7 @@ int analisador(){
     printf("\n[analise]\n");
     lexico();
     char memString[5];
+    char memString2[5];
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
     else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
@@ -470,7 +471,7 @@ int analisador(){
 
         insereTabela(token->lexema,"nomedeprograma", escopo_global, rotulo);
         gera("","START", "", "");
-        gera ("", "ALLOC", "1", "");
+        gera ("", "ALLOC", "0", "1");
         rotulo++;
         lexico(); printf("\n %s ", token->lexema);
         }
@@ -483,8 +484,10 @@ int analisador(){
         lexico();
         if (token == NULL)
         {
-            sprintf(memString, "%d", mem);
-            gera("", "DALLOC", memString, "");
+            sprintf(memString, "%d", mem-1);
+            sprintf(memString2, "%d", mem);
+            gera("", "DALLOC", memString, memString2);
+            mem = 1;
             return 0; // sucesso
         }
         else {printf("\terro em %s, final de codigo esperado\n", token->lexema);return;}// \terro
@@ -525,6 +528,7 @@ void et_analisa_var(){
 void analisa_var(){
     printf("\n[analisa_var]\n");
     int memLocal = 0;
+    char memTotalString[5];
     char memLocalString[5];
     do{
 
@@ -532,7 +536,6 @@ void analisa_var(){
             if (!(buscaVarDuplicado(token->lexema, escopo_global))) {
 
                 insereTabela(token->lexema, "variavel", escopo_global, mem);
-                mem++;
                 memLocal++;
                 lexico();
                 printf("\n %s ", token->lexema);
@@ -555,8 +558,10 @@ void analisa_var(){
             }
         } else {printf("\terro em %s, \",\" ou \":\" esperado\n", token->lexema);return;} //\terro , ou : esperado
     }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
+    sprintf(memTotalString,"%d", mem);
     sprintf(memLocalString, "%d", memLocal);
-    gera("", "ALLOC", memLocalString, "");
+    gera("", "ALLOC", memTotalString, memLocalString);
+    mem = mem+memLocal;
     lexico();
     printf("\n %s ", token->lexema);
     analisa_tipo();
