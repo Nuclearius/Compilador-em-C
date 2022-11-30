@@ -110,14 +110,14 @@ int execucao()
           }
 
      else if(!strcmp(comando,"PRN")){
-        printf("PRINT %d",Memoria[l]);
+        printf("PRINT %d",Memoria[l]);    //comando printar
         i--;
         l++;
         }
         else if(!strcmp(comando,"LDC")){
             int k;
             k=atoi(param1);
-            printf("%d",k);
+            printf("%d",k); //carregar cosntante
             i++;
             Memoria[i]=k;
             l++;
