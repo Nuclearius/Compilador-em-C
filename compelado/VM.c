@@ -63,12 +63,15 @@ int execucao()
 				m=atoi(param1);
 				n=atoi(param2);
 				printf("alloc %d %d\n",m,n);//alocacao da memoria
-				for(k=0;k<n;k++){
+				for(k=0;k<n;k++)
+				{
 					p++;
 					Memoria[p]=Memoria[m+k];
 				}
 				l++;
-			}else{
+			}
+		else
+		{
 
 			if(!strcmp(comando,"DALLOC  "))
 			{
@@ -76,7 +79,8 @@ int execucao()
 				m=atoi(param1);
 				n=atoi(param2);
 				printf("dalloc %d %d\n",m,n);//dealocacao
-				for(k=n-1;k>=0;k--){
+				for(k=n-1;k>=0;k--)
+				{
 					Memoria[m+k]= Memoria[p];
 					p--;
 				}
