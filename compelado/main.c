@@ -62,9 +62,9 @@ int analisador();
 
 void analisa_bloco();
 
-void et_analisa_var();
+int et_analisa_var();
 
-void analisa_var();
+int analisa_var();
 
 void analisa_tipo();
 
@@ -125,34 +125,6 @@ int pesquisa_funcao(char *id);
 
 char* confereTipo(char* lexema);
 
-/*
-noSimbolo criaNo();
-
-tabelaSimbolos* criaPilha();
-
-noSimbolo pushNo(char* simbolos, char* tipo, int escopo);
-
-void 4(tabelaSimbolos **pilha, char* lexema, char* tipo, int nivel, int rotulo);
-
-noSimbolo popPilha(tabelaSimbolos **pilha);
-
-bool scanPilha(char* simbolo);
-
-void defineTipoVar(char* tipo);
-
-void defineTipoFun(char* tipo);
-
-char* confereTipo(char* simbolo);
-
-bool pesquisa_duplicvar(char* simbolo);
-
-bool pesquisa_declvar(char* simbolo);
-
-bool pesquisa_procedimento(char *funcao);
-
-bool pesquisa_funcao(char *funcao);
-*/
-
 void gera(char *rotulo, char *comando, char *param1, char *param2);
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
@@ -176,10 +148,11 @@ int _index_ = 0;
 
 int escopo_global = 0;
 
-int rotulo = 1;
+int rotulo = 0;
 
 int mem = 1;
 
+int funcEnd= 0;
 
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
@@ -188,8 +161,8 @@ int main(){
     char line[LINE_LENGTH];
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera2.txt","r");
-    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera2.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
@@ -487,6 +460,7 @@ int analisador(){
             sprintf(memString, "%d", mem-1);
             sprintf(memString2, "%d", mem);
             gera("", "DALLOC", memString, memString2);
+            gera("", "HLT", "", "");
             mem = 1;
             return 0; // sucesso
         }
@@ -496,24 +470,47 @@ int analisador(){
 
 void analisa_bloco(){
     printf("\n[analisa_bloco]\n");
+    funcEnd = 0;
     lexico();
     printf("\n %s ", token->lexema);
-    et_analisa_var();
+    int memLocal = et_analisa_var();
+    char memString[5], memLocalString[5];
+
+    if ( memLocal >0)
+    {
+        sprintf(memString, "%d", mem);
+        sprintf(memLocalString, "%d", memLocal);
+        gera("", "ALLOC", memString, memLocalString);
+        mem = mem + memLocal;
+    //allocs
+    }
+
+    sprintf(memString, "%d", mem-memLocal);
+
     analisa_subrotinas();
     analisa_comandos();
+
+    if ( memLocal >0)
+    {
+    gera ("", "DALLOC", memString, memLocalString);
+    mem = mem-memLocal;
+    //dallocs
+    }
+
     printf("\n[analisa_bloco end]\n");
 }
 
 
-void et_analisa_var(){
+int et_analisa_var(){
     printf("\n[et_analisa_var]\n");
+    int varCount=0;
     if(strcmp(token->Simbolo,"svar")== 0)
     {lexico(); printf("\n %s ", token->lexema);//\terro
         if(strcmp(token->Simbolo,"sidentificador")== 0)
         {
             while(strcmp(token->Simbolo,"sidentificador")== 0)
             {
-                analisa_var();
+                varCount = varCount + analisa_var();
 
                 if (strcmp(token->Simbolo,"sponto_virgula")== 0)
                     {
@@ -521,22 +518,22 @@ void et_analisa_var(){
                 else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;} //\terro ; esperado
             }
         }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}// \terro falta identificador
-        printf("\n[et_analisa_var end]\n");
+
     }
+    printf("\n[et_analisa_var end]\n");
+    return varCount;
 }
 
-void analisa_var(){
+int analisa_var(){
     printf("\n[analisa_var]\n");
-    int memLocal = 0;
-    char memTotalString[5];
-    char memLocalString[5];
+    int varCount = 0;
     do{
 
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(buscaVarDuplicado(token->lexema, escopo_global))) {
 
-                insereTabela(token->lexema, "variavel", escopo_global, mem);
-                memLocal++;
+                insereTabela(token->lexema, "variavel", escopo_global, mem+varCount);
+                varCount++;
                 lexico();
                 printf("\n %s ", token->lexema);
             }
@@ -558,14 +555,13 @@ void analisa_var(){
             }
         } else {printf("\terro em %s, \",\" ou \":\" esperado\n", token->lexema);return;} //\terro , ou : esperado
     }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
-    sprintf(memTotalString,"%d", mem);
-    sprintf(memLocalString, "%d", memLocal);
-    gera("", "ALLOC", memTotalString, memLocalString);
-    mem = mem+memLocal;
+
     lexico();
     printf("\n %s ", token->lexema);
     analisa_tipo();
+
     printf("\n[analisa_var end]\n");
+    return varCount;
 }
 
 void analisa_tipo(){
@@ -589,7 +585,7 @@ void analisa_comandos(){
     lexico();
     printf("\n %s ", token->lexema);
     analisa_comando_simples();
-    while(strcmp(token->Simbolo,"sfim") != 0)
+    while(funcEnd == 0 &&strcmp(token->Simbolo,"sfim") != 0)
     {
         if (strcmp(token->Simbolo, "sponto_virgula") == 0)
         {
@@ -622,12 +618,16 @@ void analisa_comando_simples(){
 
 void analisa_atrib_chprocedimento(){
     printf("\n[analisa_atrib_chprocedimento]\n");
-    //pode ser melhor checar aqui se o identificador é um procedimento, se não, passar pro analisa_atribuição, talvez até fazer o analisa_chamada_procedimento aki;
-    if (pesquisa_procedimento(token->lexema) == -1)
+    int memProc = pesquisa_procedimento(token->lexema);
+    char memString[5];
+    if (memProc == -1)
         analisa_atribuicao();
     else
     {
-    //gera codigo
+
+    sprintf(memString, "%d", memProc);
+    gera("", "CALL", memString, "");
+
     lexico();
     printf("\n %s ", token->lexema);
     }
@@ -641,13 +641,17 @@ void analisa_atribuicao(){
     //if (buscaVarDeclarado(token->lexema) == -1 && pesquisa_funcao(token->lexema) != 1)
     char memString[5];
     int mem = buscaVarDeclarado(token->lexema);
-
+    int tipoFunc;
+    char *tipoVar;
     if (mem == -1)
     {
-        printf("\terro semantico em %s, variavel nao encontrada \n", token->lexema);return;// erro, identificador inválido
-    }
+        tipoFunc = pesquisa_atrib_funcao(token->lexema);
+        if (tipoFunc == 1)
+        {
+            printf("\terro semantico em %s, variavel nao encontrada \n", token->lexema);return;// erro, identificador inválido
+        }
+    } else tipoVar = confereTipo(token->lexema);
 
-    char *tipo = confereTipo(token->lexema);
 
     lexico();
     printf("\n %s ", token->lexema);
@@ -658,10 +662,23 @@ void analisa_atribuicao(){
     printf("\n %s ", token->lexema);
     int exp_tipo = analisa_expressao();
     popAll();
+
+
+
     if (exp_tipo == 2)
         { printf("\terro semantico em %s, expressao invalida \n", token->lexema);return;}
     //if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
-    if ((strcmp(tipo, "variavel booleano")  == 0 && exp_tipo == -1)||(strcmp(tipo, "variavel inteiro") == 0  && exp_tipo == 0))
+
+    if(mem == -1)
+    {
+        if (tipoFunc == exp_tipo)
+        {
+            gera("", "STR", "0", "");
+            funcEnd = 1;
+            return; // sem erro
+        }
+    }
+    else if ((strcmp(tipoVar, "variavel booleano")  == 0 && exp_tipo == -1)||(strcmp(tipoVar, "variavel inteiro") == 0  && exp_tipo == 0))
     {
         sprintf(memString, "%d", mem);
         gera("", "STR", memString, "");
@@ -755,7 +772,7 @@ void analisa_enquanto(){
     rotulo++;
     lexico();
     printf("\n %s ", token->lexema);
-    if (analisa_expressao() != -1)
+    if (analisa_expressao() != 1)
         {printf("\terro semantico em %s, expressao invalida\n", token->lexema);return;} //erro, não é bool
     popAll();
     if (strcmp(token->Simbolo, "sfaca") == 0)
@@ -786,7 +803,7 @@ void analisa_se(){
 
     lexico();
     printf("\n %s ", token->lexema);
-    if (analisa_expressao() != -1)
+    if (analisa_expressao() != 1)
         {printf("\terro semantico em %s, expressao invalida\n", token->lexema);return;} //erro, não é bool
     popAll();
 
@@ -829,7 +846,7 @@ int analisa_expressao(){
 
 
 
-    int res = analisa_expressao_simples();                // 0 = int, -1 = bool
+    int res = analisa_expressao_simples();                // 0 = int, 1 = bool
     for (I = 0; I<6 ;I++)
     {
        if( strcmp(token->Simbolo, operadores[I]) == 0)
@@ -853,7 +870,7 @@ int analisa_expressao(){
         printf("\n %s ", token->lexema);
         if (analisa_expressao_simples() != 0)
             return 2; //erro
-        res = -1;
+        res = 1;
     }
     printf("\n[analisa_expressao end]\n");
     return res;
@@ -861,7 +878,7 @@ int analisa_expressao(){
 
 int analisa_expressao_simples(){
     printf("\n[analisa_expressao_simples]\n");
-    int aux = -1;
+    int aux = 1;
     int tipo;
     if(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0)
         {
@@ -879,7 +896,7 @@ int analisa_expressao_simples(){
     {
         if (strcmp(token->Simbolo, "sou") == 0)
         {
-           aux = -1;
+           aux = 1;
            insereOperador("OR");
         } else if(strcmp(token->Simbolo, "smais") == 0)
         {
@@ -914,11 +931,11 @@ int analisa_termo(){
             insereOperador("AND");
         } else if(strcmp(token->Simbolo, "smult") == 0)
         {
-            if (tipo == -1)
+            if (tipo == 1)
                 return 2;
             insereOperador("MULT");
         } else {
-            if (tipo == -1)
+            if (tipo == 1)
                 return 2;
             insereOperador("DIVI");
         }
@@ -936,7 +953,7 @@ int analisa_termo(){
 
 int  analisa_fator(){
     printf("\n[analisa_fator]\n");
-    int tipo = 0; // 0 = int, -1 = bool;
+    int tipo = 0; // 0 = int, 1 = bool;
     int mem;
     char memString[5];
     if (strcmp(token->Simbolo, "sidentificador") == 0) {
@@ -944,7 +961,7 @@ int  analisa_fator(){
         if (mem != -1)
         {
             if (strcmp(confereTipo(token->lexema), "funcao booleana") == 0)
-                tipo = -1;
+                tipo = 1;
 
             sprintf(memString,"%d", mem);
             gera("", "CALL", memString, "");
@@ -959,7 +976,7 @@ int  analisa_fator(){
             if (mem != -1)
             {
                 if (strcmp(confereTipo(token->lexema), "variavel booleano") == 0)
-                    tipo = -1;
+                    tipo = 1;
 
                 sprintf(memString,"%d", mem);
                 gera("","LDV", memString, "");
@@ -978,7 +995,7 @@ int  analisa_fator(){
         lexico();
         printf("\n %s ", token->lexema);
         tipo = analisa_fator();
-        if (tipo != -1)
+        if (tipo != 1)
             return 2; // erro
     } else if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
     {
@@ -998,7 +1015,7 @@ int  analisa_fator(){
             if (strcmp(token->Simbolo, "sverdadeiro") == 0)
                 gera("", "LDC", "1", "");
             else gera("", "LDC", "0", "");
-            tipo = -1;
+            tipo = 1;
             lexico();
             printf("\n %s ", token->lexema);
         }
@@ -1052,10 +1069,10 @@ void analisa_declaracao_procedimento(){
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!buscaDuplicado(token->lexema,escopo_global)) {
-
+            escopo_global++;
             insereTabela(token->lexema, "procedimento", escopo_global, rotulo);
             insereTabela("#", "marca", escopo_global, NULL);
-            escopo_global++;
+
 
             sprintf(rotString, "%d", rotulo);
             gera(rotString, "NULL", " ", " ");
@@ -1071,6 +1088,7 @@ void analisa_declaracao_procedimento(){
             }
 
             Desempilha();
+            gera("", "RETURN", "", "");
             printf (" teste subrotina");
             escopo_global--;
         }
@@ -1080,6 +1098,7 @@ void analisa_declaracao_procedimento(){
         }
     }
     else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
+
     printf("\n[analisa_declaracao_procedimento end]\n");
 
 }
@@ -1092,6 +1111,7 @@ void analisa_declaracao_funcao(){
     if(strcmp(token->Simbolo,"sidentificador")==0){
         if(!(buscaDuplicado(token->lexema,escopo_global))) {
 
+            escopo_global++;
             insereTabela(token->lexema, "", escopo_global, rotulo);
 
 
@@ -1110,7 +1130,7 @@ void analisa_declaracao_funcao(){
                     else
                         strcpy(inicio->topo->tipo, "funcao booleana"); //TS->tipo = "funcao booleana";
                     insereTabela("#", "marca", escopo_global, NULL);
-                    escopo_global++;
+
                     lexico();
                     printf("\n %s ", token->lexema);
                     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
@@ -1281,6 +1301,24 @@ int pesquisa_funcao(char *id){
 
     return -1;
 }
+
+int pesquisa_atrib_funcao(char *id){
+    tabelaSimbolos *aux = inicio->topo;
+
+    do{
+        if(strcmp(aux->lexema, id) == 0)
+        {
+            if (strcmp(aux->tipo, "funcao inteiro") == 0)
+                return 0;
+            else if (strcmp(aux->tipo, "funcao booleana") == 0)
+                return 1;
+        }
+      aux = aux->prev;
+    }while(aux != NULL && aux->nivel== escopo_global);
+
+    return -1;
+}
+
 
 char* confereTipo(char* lexema){
     tabelaSimbolos *aux = inicio->topo;
