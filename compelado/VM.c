@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 char Memoria[50];//memoria
 int l;//linha
@@ -50,15 +51,14 @@ int execucao()
 	char param1 [10];
 	char param2 [10];
 
-	if(!strcmp(comando,"START   "))
+	if(!strcmp(comando,"START"))
 	{
-		printf("start\n");
+		printf("start\n");//start
 		p=-1;
 		l++;
-	}//start
-		else{	
-			if(!strcmp(comando,"ALLOC   "))
-			{
+	}
+	else if(!strcmp(comando,"ALLOC")){
+
 				int m,n,k;
 				m=atoi(param1);
 				n=atoi(param2);
@@ -69,16 +69,13 @@ int execucao()
 					Memoria[p]=Memoria[m+k];
 				}
 				l++;
-			}
-		else
-		{
 
-			if(!strcmp(comando,"DALLOC  "))
-			{
+    else if(!strcmp(comando,"DALLOC")){
+
 				int m,n,k;
 				m=atoi(param1);
 				n=atoi(param2);
-				printf("dalloc %d %d\n",m,n);//dealocacao
+				printf("dalloc %d %d\n",m,n);//dealocacao da memoria
 				for(k=n-1;k>=0;k--)
 				{
 					Memoria[m+k]= Memoria[p];
@@ -86,6 +83,46 @@ int execucao()
 				}
 				l++;
 			}
-		}
-	}
+
+    else if(!strcmp(comnado,"CALL")){
+                    int p;
+                    l++;
+                    Memoria[l]=p+1;//chamada
+                    p=atoi(param1);
+                   printf("call %d\n",p);
+                }
+     else if(!strcmp(comando,"RETURN")){
+                    printf("RETURN %d",p);//RETURN
+                    l=Memoria[p];
+                    p--;
+
+          }
+     else if(!strcmp(comando,"HLT")){
+                printf("HALT");//halt
+                return -1;
+          }
+     else if(!strcmp(comando,"RD")){
+               if(!strcmp(comando,"RD")){
+                printf("READ");
+                l++;                        //comando ler
+                scanf("%d",Memoria[l]);
+                i++;}
+          }
+
+     else if(!strcmp(comando,"PRN")){
+        printf("PRINT %d",Memoria[l]);    //comando printar
+        i--;
+        l++;
+        }
+        else if(!strcmp(comando,"LDC")){
+            int k;
+            k=atoi(param1);
+            printf("%d",k); //carregar cosntante
+            i++;
+            Memoria[i]=k;
+            l++;
+        }
+
+    }
 }
+
