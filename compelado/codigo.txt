@@ -11,7 +11,7 @@
 	RD			
 	STR	5		
 	CALL	2		
-	LOAD	0		
+	LDV	0		
 	STR	6		
 	LDV	6		
 	PRN			
@@ -25,9 +25,7 @@
 	CME			
  	JMPF	6	 	
 	CALL	4		
- 	JMP	7	 	
 6	NULL	 	 	
-7	NULL	 	 	
 	DALLOC	8	1	
 	RETURN			
 3	NULL	 	 	
@@ -35,10 +33,12 @@
 	LDV	4		
 	LDV	5		
 	ADD			
+	STR	0		
 	DALLOC	4	4	
+	RETURN			
 1	NULL	 	 	
 	CALL	2		
-	LOAD	0		
+	LDV	0		
 	STR	3		
 	LDV	3		
 	PRN			

@@ -161,8 +161,8 @@ int main(){
     char line[LINE_LENGTH];
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera2.txt","r");
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
@@ -470,7 +470,7 @@ int analisador(){
 
 void analisa_bloco(){
     printf("\n[analisa_bloco]\n");
-    funcEnd = 0;
+
     lexico();
     printf("\n %s ", token->lexema);
     int memLocal = et_analisa_var();
@@ -488,6 +488,7 @@ void analisa_bloco(){
     sprintf(memString, "%d", mem-memLocal);
 
     analisa_subrotinas();
+    funcEnd = 0;
     analisa_comandos();
 
     if ( memLocal >0)
@@ -646,7 +647,8 @@ void analisa_atribuicao(){
     if (mem == -1)
     {
         tipoFunc = pesquisa_atrib_funcao(token->lexema);
-        if (tipoFunc == 1)
+        printf( " testing yo %d ", tipoFunc);
+        if (tipoFunc == -1)
         {
             printf("\terro semantico em %s, variavel nao encontrada \n", token->lexema);return;// erro, identificador inválido
         }
@@ -671,10 +673,14 @@ void analisa_atribuicao(){
 
     if(mem == -1)
     {
+
         if (tipoFunc == exp_tipo)
         {
             gera("", "STR", "0", "");
             funcEnd = 1;
+            lexico();
+            printf("\n %s ", token->lexema);
+            printf("\n[analisa_atribuicao end]\n");
             return; // sem erro
         }
     }
@@ -799,6 +805,7 @@ void analisa_se(){
     printf("\n[analisa_se]\n");
 
     int auxrot, auxrot2;
+    int flag = 0;
     char rotString[7];
 
     lexico();
@@ -818,23 +825,34 @@ void analisa_se(){
     else {printf("\terro em %s, entao esperado\n", token->lexema);return;} //\terro
     analisa_comando_simples();
 
-    auxrot2 = rotulo;
-    sprintf(rotString, "%d", rotulo);
-    gera(" ", "JMP", rotString, " ");
-    rotulo++;
 
-    sprintf(rotString, "%d", auxrot);
-    gera(rotString, "NULL", " ", " ");
+
+
 
     if (strcmp(token->Simbolo, "ssenao") == 0)
     {
+
+        auxrot2 = rotulo;
+        sprintf(rotString, "%d", rotulo);
+        gera(" ", "JMP", rotString, " ");// ssenão
+        rotulo++;
+        flag = 1;
+
         lexico();
         printf("\n %s ", token->lexema);
         analisa_comando_simples();
     }
 
-    sprintf(rotString, "%d", auxrot2);
+    sprintf(rotString, "%d", auxrot);
     gera(rotString, "NULL", " ", " ");
+
+
+    if (flag == 1)
+    {
+       sprintf(rotString, "%d", auxrot2); //ssenão
+        gera(rotString, "NULL", " ", " ");
+    }
+
 
     printf("\n[analisa_se end]\n");
 }
@@ -965,7 +983,7 @@ int  analisa_fator(){
 
             sprintf(memString,"%d", mem);
             gera("", "CALL", memString, "");
-            gera("", "LOAD", "0", "");
+            gera("", "LDV", "0", "");
 
             lexico();
             printf("\n %s ", token->lexema);
@@ -1089,7 +1107,6 @@ void analisa_declaracao_procedimento(){
 
             Desempilha();
             gera("", "RETURN", "", "");
-            printf (" teste subrotina");
             escopo_global--;
         }
         else{
@@ -1144,6 +1161,7 @@ void analisa_declaracao_funcao(){
                     return;
                 }//\terro
                 Desempilha();
+                gera("", "RETURN", "", "");
                 escopo_global--;
             } else {
                 printf("\terro em %s, \":\" esperado\n", token->lexema);
@@ -1308,13 +1326,14 @@ int pesquisa_atrib_funcao(char *id){
     do{
         if(strcmp(aux->lexema, id) == 0)
         {
+
             if (strcmp(aux->tipo, "funcao inteiro") == 0)
                 return 0;
             else if (strcmp(aux->tipo, "funcao booleana") == 0)
                 return 1;
         }
       aux = aux->prev;
-    }while(aux != NULL && aux->nivel== escopo_global);
+    }while(aux != NULL);
 
     return -1;
 }
