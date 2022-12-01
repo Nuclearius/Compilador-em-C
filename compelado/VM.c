@@ -279,7 +279,7 @@ int execucao()
 	}else if(!strcmp(comando,"JMPF    ")){
 		if(Memoria[p] == 0){
 			int u = atoi(param1);
-			l = FetchLabel(u);
+			l = busca(u);
 			}
 		else{
 			l++;
