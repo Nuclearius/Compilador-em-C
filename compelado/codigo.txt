@@ -17,40 +17,16 @@
 	PRN			
 	RETURN			
 5	NULL	 	 	
-	ALLOC	8	3	
+	ALLOC	8	1	
 	RD			
 	STR	8		
 	LDV	8		
 	LDC	10		
 	CME			
-	LDV	8		
-	LDC	5		
-	CMA			
-	AND			
-	STR	8		
-	LDV	5		
-	LDV	9		
-	ADD			
-	LDC	10		
-	CME			
-	NEG			
-	LDV	5		
-	INV			
-	LDV	8		
-	ADD			
-	LDC	5		
-	CMA			
-	OR			
-	LDV	9		
-	LDV	8		
-	SUB			
-	LDC	3		
-	CEQ			
-	AND			
  	JMPF	6	 	
 	CALL	4		
 6	NULL	 	 	
-	DALLOC	8	3	
+	DALLOC	8	1	
 	RETURN			
 3	NULL	 	 	
 	CALL	5		

@@ -52,7 +52,7 @@ void analisa_bloco();
 
 int et_analisa_var();
 
-int analisa_var();
+int analisa_var(int count);
 
 void analisa_tipo();
 
@@ -122,6 +122,8 @@ FILE *arquivo;
 
 FILE *codigo;
 
+FILE *erros;
+
 tipoToken* token = NULL;
 
 tabelaSimbolos* TS;
@@ -152,8 +154,8 @@ int main(){
     char linemarker[2] = {13,0};
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera3.txt","r");
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera3.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera3.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
@@ -177,16 +179,28 @@ int main(){
         memset(line, 0, sizeof(line));
     }
     codigo = fopen("codigo.txt", "w");
+    erros = fopen("erros.txt", "w");
+
     resultado = analisador();
     printf("\nPilha final: \n");
     printPilha();
     if (resultado == 0)
+        {
+        fprintf(erros, "\nsem erros!\n");
         printf("\nanalise concluida\n");
+        }
     else printf("\nerro na analise\n");
 
 
-    fclose(codigo);
+
+
+    Desempilha();
+
+
     fclose(arquivo);
+    fclose(erros);
+    fclose(codigo);
+
 
     return 0;
 
@@ -252,16 +266,12 @@ void tratarIdentificador(){
         if ( strcmp(ID,palavrasReservadas[I]) == 0)
         {
             strcat(s, ID);
-
-            //token = createToken( ID, s);
             strcpy(token->lexema, ID);
             strcpy(token->Simbolo, s);
 
             return;
         }
     }
-
-    //token = createToken( ID, "sidentificador");
     strcpy(token->lexema, ID);
     strcpy(token->Simbolo, "sidentificador");
 }
@@ -320,7 +330,8 @@ void tratarOperador(){
         case '!':
 
             if (text[_index_] != '=')
-                printf("\terro linha %d, caractere %s nao esperado, esperava \"=\"\n", lineCounter, text[_index_]);
+
+                escreveErro("LEXICO: caractere nao esperado, esperava \"=\"");
             else
                 {
                     _index_++;
@@ -375,7 +386,7 @@ void tratarOperador(){
                 strcpy(token->Simbolo, "smaiorig");
             }
             break;
-        default: printf("erro linha %d, Operador %s nao identificado \n", lineCounter, c); break;
+        default: escreveErro("LEXICO: operador nao identificado"); break;
     }
 
 }
@@ -394,7 +405,7 @@ void lexico(){
                 if (c == 13)
                     lineCounter++;
                 else if (c == 0)
-                    printf("erro linha %d, comentario sem fim\n", lineCounter);
+                     escreveErro("LEXICO: comentario sem fim");
             }
             _index_++;
             lexico();
@@ -437,7 +448,7 @@ int analisador(){
     char memString2[5];
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, \"programa\" esperado, %s recebido\n", lineCounter, token->Simbolo);return;}//\terro não tem programa
+    else { escreveErro("SINTATICO: \"programa\" esperado");return;}//\terro não tem programa
 
     if (strcmp(token->Simbolo, "sidentificador") == 0){
 
@@ -447,10 +458,10 @@ int analisador(){
         rotulo++;
         lexico(); printf("\n %s ", token->lexema);
         }
-    else {printf("\terro linha %d, identificador esperado, %s recebido\n", lineCounter, token->Simbolo);return;}//\terro falta identificador
+    else { escreveErro("SINTATICO: identificador esperado");return;}//\terro falta identificador
     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
         analisa_bloco();
-    else  {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;}//\terro ponto_virg
+    else  { escreveErro("SINTATICO: \";\" esperado");return;}//\terro ponto_virg
     if (strcmp(token->Simbolo, "sponto") == 0)
     {
         lexico();
@@ -463,8 +474,8 @@ int analisador(){
             mem = 1;
             return 0; // sucesso
         }
-        else {printf("\terro linha %d, final de codigo esperado\n", lineCounter);return;}// \terro
-    } else {printf("\terro em linha %d, \".\" esperado\n", lineCounter);return;} //\terro
+        else {escreveErro("SINTATICO: final do codigo esperado");return;}// \terro
+    } else {escreveErro("SINTATICO: \".\" esperado");return;} //\terro
 }
 
 void analisa_bloco(){
@@ -510,21 +521,21 @@ int et_analisa_var(){
         {
             while(strcmp(token->Simbolo,"sidentificador")== 0)
             {
-                varCount = varCount + analisa_var();
+                varCount = varCount + analisa_var(varCount);
 
                 if (strcmp(token->Simbolo,"sponto_virgula")== 0)
                     {
                         lexico(); printf("\n %s ", token->lexema);}
-                else  {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;} //\terro ; esperado
+                else  {escreveErro("SINTATICO: \";\" esperado");return;} //\terro ; esperado
             }
-        }else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}// \terro falta identificador
+        }else {escreveErro("SINTATICO: identificador esperado");return;}// \terro falta identificador
 
     }
     printf("\n[et_analisa_var end]\n");
     return varCount;
 }
 
-int analisa_var(){
+int analisa_var(int count){
     printf("\n[analisa_var]\n");
     int varCount = 0;
     do{
@@ -532,17 +543,17 @@ int analisa_var(){
         if(strcmp(token->Simbolo,"sidentificador")== 0){
             if (!(buscaVarDuplicado(token->lexema, escopo_global))) {
 
-                insereTabela(token->lexema, "variavel", escopo_global, mem+varCount);
+                insereTabela(token->lexema, "variavel", escopo_global, mem+varCount+ count);
                 varCount++;
                 lexico();
                 printf("\n %s ", token->lexema);
             }
             else{
-                printf("\terro linha %d, nome de variavel ja utilizado\n", lineCounter);
+                escreveErro("SEMANTICO: nome da variavel ja utilizado");
                 return;
             }
         }
-        else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}
+        else {escreveErro("SINTATICO: identificador esperado");return;}
 
         if(strcmp(token->Simbolo,"svirgula")== 0 || strcmp(token->Simbolo,"sdoispontos")== 0)
         {
@@ -551,9 +562,9 @@ int analisa_var(){
                 lexico();
                 printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo,"sdoispontos")== 0)
-                    {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro, identificador espserado
+                    {escreveErro("SINTATICO: identificador esperado");return;}//\terro, identificador espserado
             }
-        } else {printf("\terro linha %d, \",\" ou \":\" esperado\n", lineCounter);return;} //\terro , ou : esperado
+        } else {escreveErro("SINTATICO: \",\" ou \":\" esperado");return;} //\terro , ou : esperado
     }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
 
     lexico();
@@ -567,7 +578,7 @@ int analisa_var(){
 void analisa_tipo(){
     printf("\n[analisa_tipo]\n");
     if (strcmp(token->Simbolo,"sinteiro")!=0 && strcmp(token->Simbolo,"sbooleano")!=0){
-        printf("\terro linha %d, tipo nao reconhecido\n", lineCounter);
+        escreveErro("SINTATICO: tipo de variavel nao reconhecido");
         return;
     }
 
@@ -581,7 +592,7 @@ void analisa_tipo(){
 void analisa_comandos(){
     printf("\n[analisa_comandos]\n");
     if (strcmp(token->Simbolo, "sinicio") != 0)
-     {printf("\terro linha %d, inicio esperado\n", lineCounter);return;} //\terro, inicio esperado
+     {escreveErro("SINTATICO: \"inicio\" esperado");return;} //\terro, inicio esperado
     lexico();
     printf("\n %s ", token->lexema);
     analisa_comando_simples();
@@ -593,7 +604,7 @@ void analisa_comandos(){
             printf("\n %s ", token->lexema);
             if (strcmp(token->Simbolo,"sfim") != 0)
                 analisa_comando_simples();
-        } else {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;} //\terro ; esperado
+        } else {escreveErro("SINTATICO: \";\" esperado");return;} //\terro ; esperado
     }
     lexico();
     printf("\n %s ", token->lexema);
@@ -649,7 +660,7 @@ void analisa_atribuicao(){
         printf( " testing yo %d ", tipoFunc);
         if (tipoFunc == -1)
         {
-            printf("\terro semantico linha %d, variavel nao encontrada \n", lineCounter);return;// erro, identificador inválido
+            escreveErro("SEMANTICO: variavel nao encontrada");return;// erro, identificador inválido
         }
     } else tipoVar = confereTipo(token->lexema);
 
@@ -657,7 +668,7 @@ void analisa_atribuicao(){
     lexico();
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "satribuicao") != 0)
-       { printf("\terro linha %d, \":=\" esperado\n", lineCounter);return;} //erro, ':=' esperado
+       {escreveErro("SINTATICO: \":=\" esperado");return;} //erro, ':=' esperado
 
     lexico();
     printf("\n %s ", token->lexema);
@@ -667,7 +678,7 @@ void analisa_atribuicao(){
 
 
     if (exp_tipo == 2)
-        { printf("\terro semantico linha %d, expressao invalida \n", lineCounter);funcEnd = 1;return;}
+        { escreveErro("SEMANTICA: expressao invalida");funcEnd = 1;return;}
     //if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
 
     if(mem == -1)
@@ -692,7 +703,7 @@ void analisa_atribuicao(){
     }
 
     funcEnd = 1;
-    printf("\terro semantico linha %d, tipos incompativeis %d\n", lineCounter, exp_tipo);
+    escreveErro("SEMANTICO: expressao incompativel com atribuicao");
     return; //expressão incompatível com váriavel
 }
 
@@ -704,7 +715,7 @@ void analisa_leia(){
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, \"(\" esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: \"(\" esperado");return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         mem = buscaVarDeclarado(token->lexema);
         if(mem != -1) {
@@ -716,17 +727,17 @@ void analisa_leia(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else {printf("\terro semantico linha %d, tipo de variavel invalido\n", lineCounter);return;} //erro, variável inválida
+            } else {escreveErro("SEMANTICO: tipo de variavel invalido como parametro do comando");return;} //erro, variável inválida
         }
         else{
-            printf("erro linha %d, variavel não foi encontrada", lineCounter);
+            escreveErro("SEMANTICO: variavel nao encontrada");
             return;
         }
     }
-    else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: identificador esperado");return;}//\terro
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, \")\" esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: \")\" esperado");return;}//\terro
     printf("\n[analisa_leia end]\n");
 }
 
@@ -739,12 +750,12 @@ void analisa_escreva(){
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, \"(\" esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: \"(\" esperado");return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         mem = buscaVarDeclarado(token->lexema);
-        //if(buscaVarDeclarado(token->lexema) != -1 || pesquisa_funcao(token->lexema) == 1)
+
         if(mem != -1) {
-           //if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0 || strcmp(confereTipo(token->lexema), "funcao inteiro") == 0)
+
             if (strcmp(confereTipo(token->lexema), "variavel inteiro") == 0)
             {
                 sprintf(memString,"%d",mem);
@@ -753,10 +764,10 @@ void analisa_escreva(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else   {printf("\terro semantico linha %d, tipo invalido\n", lineCounter);return;} //erro, variável inválida
+            } else   {escreveErro("SEMANTICO: tipo de variavel invalido como parametro do comando");return;} //erro, variável inválida
         }
         else{
-            printf("erro linha %d, variavel ou funcao não encontrada", lineCounter);
+            escreveErro("SEMANTICO: variavel nao encontrada");
             return;
         }
     }
@@ -764,7 +775,7 @@ void analisa_escreva(){
 
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, \")\" esperado\n",lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: \"(\" esperado");return;}//\terro
     printf("\n[analisa_escreva end]\n");
 }
 
@@ -779,7 +790,7 @@ void analisa_enquanto(){
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != 1)
-        {printf("\terro semantico linha %d, expressao invalida\n", lineCounter);return;} //erro, não é bool
+        {escreveErro("SEMANTICO: expressao invalida");return;} //erro, não é bool
     popAll();
     if (strcmp(token->Simbolo, "sfaca") == 0)
     {
@@ -796,7 +807,7 @@ void analisa_enquanto(){
         sprintf(rotString, "%d", auxrot2);
         gera(rotString, "NULL", " ", " ");
     }
-    else {printf("\terro linha %d, faca esperado\n", lineCounter);return;} //\terro
+    else {escreveErro("SINTATICO: \"faca\" esperado");return;} //\terro
 
     printf("\n[analisa_enquanto end]\n");
 }
@@ -811,7 +822,7 @@ void analisa_se(){
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != 1)
-        {printf("\terro semantico linha %d, expressao invalida\n", lineCounter);return;} //erro, não é bool
+        {escreveErro("SEMANTICO: expressao invalida");return;} //erro, não é bool
     popAll();
 
     auxrot = rotulo;
@@ -822,7 +833,7 @@ void analisa_se(){
 
     if (strcmp(token->Simbolo, "sentao") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro linha %d, entao esperado\n", lineCounter);return;} //\terro
+    else {escreveErro("SINTATICO: \"entao\" esperado");return;} //\terro
     analisa_comando_simples();
 
 
@@ -865,13 +876,16 @@ int analisa_expressao(){
 
 
     int res = analisa_expressao_simples(false);                // 0 = int, 1 = bool
+
     for (I = 0; I<6 ;I++)
     {
+
        if( strcmp(token->Simbolo, operadores[I]) == 0)
            break;
     }
     if (I!=6)
     {
+
         if (res != 0)
             return 2; //erro
         switch(I){
@@ -881,13 +895,13 @@ int analisa_expressao(){
         case 3: insereOperador("CME"); break;
         case 4: insereOperador("CMEQ"); break;
         case 5: insereOperador("CDIF"); break;
-        default: printf ("\n WTF erro\n"); break;
+        default: escreveErro("GERACAO DE CODIGO: ERRO INESPERADO"); break;
         }
 
         lexico();
         printf("\n %s ", token->lexema);
         if (analisa_expressao_simples(true) != 0)
-            return 2; //erro
+             {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;}
         res = 1;
     }
     printf("\n[analisa_expressao end]\n");
@@ -908,7 +922,7 @@ int analisa_expressao_simples(bool relac){
         }
     tipo = analisa_termo(relac);
     if (tipo != 0 && aux == 0)
-         {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} //erro, tipo incompativel
+         {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;} //erro, tipo incompativel
 
 
     while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
@@ -933,7 +947,7 @@ int analisa_expressao_simples(bool relac){
         lexico();
         printf("\n %s ", token->lexema);
         if (analisa_termo(relac) != tipo)
-            {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} // erro
+            {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;} // erro
     }
     printf("\n[analisa_expressao_simples end]\n");
     if(relac == true && tipo == 1)
@@ -944,6 +958,7 @@ int analisa_expressao_simples(bool relac){
 int analisa_termo(bool relac){
     printf("\n[analisa_termo]\n");
     int tipo = analisa_fator();
+
     while(strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0 || strcmp(token->Simbolo, "se") == 0)
     {
 
@@ -952,25 +967,23 @@ int analisa_termo(bool relac){
             if (relac)
                 tipo = 1;
             else if (tipo == 0)
-                 {printf("\nerro teste em %s, tipo  incompativel\n", token->lexema);return 2;}
+                 {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;}
             insereOperador("AND");
         } else if(strcmp(token->Simbolo, "smult") == 0)
         {
             if (tipo == 1)
-                 {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}
+                 {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;}
             insereOperador("MULT");
         } else {
             if (tipo == 1)
-                 {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}
+                 {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;}
             insereOperador("DIVI");
         }
 
-       // if ((tipo == 0 && strcmp(token->Simbolo, "se") == 0) || ((strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0)&& tipo == -1))
-        //    return 2; //erro, tipos incompativeis
         lexico();
         printf("\n %s ", token->lexema);
         if (analisa_fator() != tipo)
-             {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}  //erro tipos não compatíveis
+             {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;}  //erro tipos não compatíveis
     }
     printf("\n[analisa_termo end]\n");
     return tipo;
@@ -1008,7 +1021,7 @@ int  analisa_fator(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else {printf("\terro semantico linha %d, identificador nao declarado\n", lineCounter);return 2;} //erro
+            } else {escreveErro("SEMANTICO: identificador nao declarado");return 2;} //erro
         }
     }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
@@ -1022,7 +1035,7 @@ int  analisa_fator(){
         printf("\n %s ", token->lexema);
         tipo = analisa_fator();
         if (tipo != 1)
-            return 2; // erro
+             {escreveErro("SEMANTICO: tipos incompativeis na expressao");return 2;} // erro
     } else if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
     {
         insereOperador("(");
@@ -1035,7 +1048,7 @@ int  analisa_fator(){
                 popParanteses();
                 lexico();
                 printf("\n %s ", token->lexema);}
-        else {printf("\terro linha %d, \")\" esperado\n", lineCounter);return;} //\terro
+        else {escreveErro("SINTATICO: \")\" esperado");return 2;} //\terro
     } else if (strcmp(token->Simbolo, "sverdadeiro") == 0 || strcmp(token->Simbolo, "sfalso") == 0)
         {
             if (strcmp(token->Simbolo, "sverdadeiro") == 0)
@@ -1045,7 +1058,7 @@ int  analisa_fator(){
             lexico();
             printf("\n %s ", token->lexema);
         }
-    else {printf("\terro linha %d, fator esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: fator esperado");return 2;}//\terro
     printf("\n[analisa_fator end]\n");
 
     return tipo;
@@ -1075,7 +1088,7 @@ void analisa_subrotinas()
         else analisa_declaracao_funcao();
         if(strcmp(token->Simbolo,"sponto_virgula")==0)
             {lexico(); printf("\n %s ", token->lexema);}
-        else {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;}//\terro, ; esperado
+        else {escreveErro("SINTATICO: \";\" esperado");return;}//\terro, ; esperado
     }
     if (flag== 1)
     {
@@ -1094,7 +1107,7 @@ void analisa_declaracao_procedimento(){
 
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
-        if(!buscaDuplicado(token->lexema,escopo_global)) {
+        if(!buscaDuplicado(token->lexema,escopo_global+1)) {
             escopo_global++;
             insereTabela(token->lexema, "procedimento", escopo_global, rotulo);
             insereTabela("#", "marca", escopo_global, NULL);
@@ -1118,11 +1131,11 @@ void analisa_declaracao_procedimento(){
             escopo_global--;
         }
         else{
-            printf("erro linha %d, procedimentos com nomes iguais", lineCounter);
+            escreveErro("SEMANTICO: nome do procedimento ja utilizado");
             return;
         }
     }
-    else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
+    else {escreveErro("SINTATICO: identificador esperado");return;}//\terro
 
     printf("\n[analisa_declaracao_procedimento end]\n");
 
@@ -1134,7 +1147,7 @@ void analisa_declaracao_funcao(){
     lexico();
     printf("\n %s ", token->lexema);
     if(strcmp(token->Simbolo,"sidentificador")==0){
-        if(!(buscaDuplicado(token->lexema,escopo_global))) {
+        if(!(buscaDuplicado(token->lexema,escopo_global+1))) {
 
             escopo_global++;
             insereTabela(token->lexema, "", escopo_global, rotulo);
@@ -1161,25 +1174,25 @@ void analisa_declaracao_funcao(){
                     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
                         analisa_bloco();
                     else {
-                        printf("\terro linha %d, \";\" esperado\n", lineCounter);
+                        escreveErro("SINTATICO: \";\" esperado");
                         return;
                         }
                 } else {
-                    printf("\terro linha %d, tipo nao reconhecido\n", lineCounter);
+                    escreveErro("SINTATICO: tipo nao reconhecido");
                     return;
                 }//\terro
                 Desempilha();
                 gera("", "RETURN", "", "");
                 escopo_global--;
             } else {
-                printf("\terro linha %d, \":\" esperado\n", lineCounter);
+                escreveErro("SINTATICO: \":\" esperado");
                 return;
             }//\terro
         }
         else{
-            printf("ERRO, identificador já utilizado");
+            escreveErro("SEMANTICO: nome da funcao ja utilizado");
         }
-    }else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
+    }else {escreveErro("SINTATICO: identificador esperado");return;}//\terro
     printf("\n[analisa_declaracao_funcao end]\n");
 
 }
@@ -1500,6 +1513,12 @@ void gera(char *rotulo, char *comando, char *param1, char *param2)
 
     fprintf ( codigo, "%s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
 }
+
+void escreveErro(char *erro)
+{
+    fprintf(erros, "\nERRO %s. LINHA: %d", erro, lineCounter);
+}
+;
 
 void printPosFixa(){
     psPilha *aux = psInicio->topo;

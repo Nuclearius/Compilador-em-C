@@ -1,0 +1,18 @@
+{ teste procedimentos e funcoes aninhados recursivos OK
+}
+
+programa test;
+var a,b,s : inteiro;                 
+    x,y : inteiro;  
+    g : booleano;      
+                                      
+
+inicio      {corpo principal}
+
+	se ((x>10)ou(x!=20)e(a<x))
+	entao g := y > 3 e (a + b > s);
+	escreva(a);
+
+fim.                               
+
+

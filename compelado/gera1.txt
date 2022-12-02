@@ -3,7 +3,7 @@
 
 programa test;
 var a,b,s: inteiro;                 
-                              
+             
  funcao soma: inteiro;
  var c,a,s: inteiro;                   
      z: booleano;                    
@@ -11,7 +11,7 @@ var a,b,s: inteiro;
   inicio
      leia (c);
      leia (a);
-     s:= soma;                  
+     s:= soma;        
      escreva (s);
   fim;
   procedimento loop;         
