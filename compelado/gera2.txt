@@ -18,7 +18,7 @@ var a,b,s: inteiro;
   var x: inteiro;
   inicio
     leia (x);   {para parar digite um valor maior que 9 }
-    se (x < 10) e (x >= 2)
+    se (x < 10) ou (x >= 2)
     entao ler;               
   fim;
  

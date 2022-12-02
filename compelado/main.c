@@ -11,18 +11,6 @@ typedef struct tipoToken{
     char* lexema;
     char* Simbolo;
 }tipoToken;
-/*
-typedef struct ns{
-    char* tipo;
-    char* simbolo;
-    int escopo;
-}noSimbolo;
-
-typedef struct pilha{
-    struct pilha *prev;
-    noSimbolo simbolo;
-} tabelaSimbolos;
-*/
 
 typedef struct posfixa {
     char valor[10];
@@ -154,14 +142,17 @@ int mem = 1;
 
 int funcEnd= 0;
 
+int lineCounter = 1;
+
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 int main(){
     char line[LINE_LENGTH];
+    char linemarker[2] = {13,0};
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera3.txt","r");
     //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
@@ -182,6 +173,7 @@ int main(){
     token = createToken("", "");
     while(fgets(line,LINE_LENGTH,arquivo)){
         strcat(text, line);
+        strcat(text,linemarker);
         memset(line, 0, sizeof(line));
     }
     codigo = fopen("codigo.txt", "w");
@@ -325,7 +317,7 @@ void tratarOperador(){
         case '!':
 
             if (text[_index_] != '=')
-                printf("\terro, caractere %s nao esperado, esperava \"=\"\n", text[_index_]);
+                printf("\terro linha %d, caractere %s nao esperado, esperava \"=\"\n", lineCounter, text[_index_]);
             else
                 {
                     _index_++;
@@ -380,7 +372,7 @@ void tratarOperador(){
                 strcpy(token->Simbolo, "smaiorig");
             }
             break;
-        default: printf("erro, Operador %s nao identificado \n", c); break;
+        default: printf("erro linha %d, Operador %s nao identificado \n", lineCounter, c); break;
     }
 
 }
@@ -396,8 +388,10 @@ void lexico(){
             {
                 _index_++;
                 c = text[_index_];
-                if (c == 0)
-                    printf("erro, comentario sem fim\n");
+                if (c == 13)
+                    lineCounter++;
+                else if (c == 0)
+                    printf("erro linha %d, comentario sem fim\n", lineCounter);
             }
             _index_++;
             lexico();
@@ -415,6 +409,8 @@ void lexico(){
 
         else if (c == 32 || c == 10 || c == 13 || c == 9)
         {
+            if (c == 13)
+                lineCounter++;
             _index_++;
             lexico();
         }
@@ -438,7 +434,7 @@ int analisador(){
     char memString2[5];
     if (strcmp(token->Simbolo, "sprograma") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \"programa\" esperado, %s recebido\n", token->lexema, token->Simbolo);return;}//\terro não tem programa
+    else {printf("\terro linha %d, \"programa\" esperado, %s recebido\n", lineCounter, token->Simbolo);return;}//\terro não tem programa
 
     if (strcmp(token->Simbolo, "sidentificador") == 0){
 
@@ -448,10 +444,10 @@ int analisador(){
         rotulo++;
         lexico(); printf("\n %s ", token->lexema);
         }
-    else {printf("\terro em %s, identificador esperado\n", token->lexema, token->Simbolo);return;}//\terro falta identificador
+    else {printf("\terro linha %d, identificador esperado, %s recebido\n", lineCounter, token->Simbolo);return;}//\terro falta identificador
     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
         analisa_bloco();
-    else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro ponto_virg
+    else  {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;}//\terro ponto_virg
     if (strcmp(token->Simbolo, "sponto") == 0)
     {
         lexico();
@@ -464,8 +460,8 @@ int analisador(){
             mem = 1;
             return 0; // sucesso
         }
-        else {printf("\terro em %s, final de codigo esperado\n", token->lexema);return;}// \terro
-    } else {printf("\terro em %s, \".\" esperado\n", token->lexema);return;} //\terro
+        else {printf("\terro linha %d, final de codigo esperado\n", lineCounter);return;}// \terro
+    } else {printf("\terro em linha %d, \".\" esperado\n", lineCounter);return;} //\terro
 }
 
 void analisa_bloco(){
@@ -506,7 +502,7 @@ int et_analisa_var(){
     printf("\n[et_analisa_var]\n");
     int varCount=0;
     if(strcmp(token->Simbolo,"svar")== 0)
-    {lexico(); printf("\n %s ", token->lexema);//\terro
+    {lexico(); printf("\n %s ", token->lexema);
         if(strcmp(token->Simbolo,"sidentificador")== 0)
         {
             while(strcmp(token->Simbolo,"sidentificador")== 0)
@@ -516,9 +512,9 @@ int et_analisa_var(){
                 if (strcmp(token->Simbolo,"sponto_virgula")== 0)
                     {
                         lexico(); printf("\n %s ", token->lexema);}
-                else  {printf("\terro em %s, \";\" esperado\n", token->lexema);return;} //\terro ; esperado
+                else  {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;} //\terro ; esperado
             }
-        }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}// \terro falta identificador
+        }else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}// \terro falta identificador
 
     }
     printf("\n[et_analisa_var end]\n");
@@ -539,11 +535,11 @@ int analisa_var(){
                 printf("\n %s ", token->lexema);
             }
             else{
-                printf("ERRO, nome de variavel ja utilizado");
+                printf("\terro linha %d, nome de variavel ja utilizado\n", lineCounter);
                 return;
             }
         }
-        else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}
+        else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}
 
         if(strcmp(token->Simbolo,"svirgula")== 0 || strcmp(token->Simbolo,"sdoispontos")== 0)
         {
@@ -552,9 +548,9 @@ int analisa_var(){
                 lexico();
                 printf("\n %s ", token->lexema);
                 if (strcmp(token->Simbolo,"sdoispontos")== 0)
-                    {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro, identificador espserado
+                    {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro, identificador espserado
             }
-        } else {printf("\terro em %s, \",\" ou \":\" esperado\n", token->lexema);return;} //\terro , ou : esperado
+        } else {printf("\terro linha %d, \",\" ou \":\" esperado\n", lineCounter);return;} //\terro , ou : esperado
     }while  (strcmp(token->Simbolo,"sdoispontos") != 0);
 
     lexico();
@@ -568,7 +564,7 @@ int analisa_var(){
 void analisa_tipo(){
     printf("\n[analisa_tipo]\n");
     if (strcmp(token->Simbolo,"sinteiro")!=0 && strcmp(token->Simbolo,"sbooleano")!=0){
-        printf("\terro em %s, tipo nao reconhecido\n", token->lexema);
+        printf("\terro linha %d, tipo nao reconhecido\n", lineCounter);
         return;
     }
 
@@ -582,7 +578,7 @@ void analisa_tipo(){
 void analisa_comandos(){
     printf("\n[analisa_comandos]\n");
     if (strcmp(token->Simbolo, "sinicio") != 0)
-     {printf("\terro em %s, inicio esperado\n", token->lexema);return;} //\terro, inicio esperado
+     {printf("\terro linha %d, inicio esperado\n", lineCounter);return;} //\terro, inicio esperado
     lexico();
     printf("\n %s ", token->lexema);
     analisa_comando_simples();
@@ -594,7 +590,7 @@ void analisa_comandos(){
             printf("\n %s ", token->lexema);
             if (strcmp(token->Simbolo,"sfim") != 0)
                 analisa_comando_simples();
-        } else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;} //\terro ; esperado
+        } else {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;} //\terro ; esperado
     }
     lexico();
     printf("\n %s ", token->lexema);
@@ -650,7 +646,7 @@ void analisa_atribuicao(){
         printf( " testing yo %d ", tipoFunc);
         if (tipoFunc == -1)
         {
-            printf("\terro semantico em %s, variavel nao encontrada \n", token->lexema);return;// erro, identificador inválido
+            printf("\terro semantico linha %d, variavel nao encontrada \n", lineCounter);return;// erro, identificador inválido
         }
     } else tipoVar = confereTipo(token->lexema);
 
@@ -658,7 +654,7 @@ void analisa_atribuicao(){
     lexico();
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "satribuicao") != 0)
-        return; //erro, ':=' esperado
+       { printf("\terro linha %d, \":=\" esperado\n", lineCounter);return;} //erro, ':=' esperado
 
     lexico();
     printf("\n %s ", token->lexema);
@@ -668,7 +664,7 @@ void analisa_atribuicao(){
 
 
     if (exp_tipo == 2)
-        { printf("\terro semantico em %s, expressao invalida \n", token->lexema);return;}
+        { printf("\terro semantico linha %d, expressao invalida \n", lineCounter);return;}
     //if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
 
     if(mem == -1)
@@ -692,7 +688,7 @@ void analisa_atribuicao(){
         return; // sem erro
     }
 
-    printf("\terro semantico em %s, tipos incompativeis %d\n", token->lexema, exp_tipo);
+    printf("\terro semantico linha %d, tipos incompativeis %d\n", lineCounter, exp_tipo);
     return; //expressão incompatível com váriavel
 }
 
@@ -704,7 +700,7 @@ void analisa_leia(){
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, \"(\" esperado\n", lineCounter);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         mem = buscaVarDeclarado(token->lexema);
         if(mem != -1) {
@@ -716,17 +712,17 @@ void analisa_leia(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else {printf("\terro semantico em %s, tipo de variavel invalido\n", token->lexema);return;} //erro, variável inválida
+            } else {printf("\terro semantico linha %d, tipo de variavel invalido\n", lineCounter);return;} //erro, variável inválida
         }
         else{
-            printf("ERRO, variavel não foi encontrada");
+            printf("erro linha %d, variavel não foi encontrada", lineCounter);
             return;
         }
     }
-    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, \")\" esperado\n", lineCounter);return;}//\terro
     printf("\n[analisa_leia end]\n");
 }
 
@@ -739,7 +735,7 @@ void analisa_escreva(){
     printf("\n %s ", token->lexema);
     if (strcmp(token->Simbolo, "sabre_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \"(\" esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, \"(\" esperado\n", lineCounter);return;}//\terro
     if (strcmp(token->Simbolo, "sidentificador") == 0){
         mem = buscaVarDeclarado(token->lexema);
         //if(buscaVarDeclarado(token->lexema) != -1 || pesquisa_funcao(token->lexema) == 1)
@@ -753,18 +749,18 @@ void analisa_escreva(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else   {printf("\terro semantico em %s, tipo invalido\n", token->lexema);return;} //erro, variável inválida
+            } else   {printf("\terro semantico linha %d, tipo invalido\n", lineCounter);return;} //erro, variável inválida
         }
         else{
-            printf("ERRO, variavel ou funcao não encontrada");
+            printf("erro linha %d, variavel ou funcao não encontrada", lineCounter);
             return;
         }
     }
-    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
 
     if (strcmp(token->Simbolo, "sfecha_parenteses") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, \")\" esperado\n",lineCounter);return;}//\terro
     printf("\n[analisa_escreva end]\n");
 }
 
@@ -779,7 +775,7 @@ void analisa_enquanto(){
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != 1)
-        {printf("\terro semantico em %s, expressao invalida\n", token->lexema);return;} //erro, não é bool
+        {printf("\terro semantico linha %d, expressao invalida\n", lineCounter);return;} //erro, não é bool
     popAll();
     if (strcmp(token->Simbolo, "sfaca") == 0)
     {
@@ -796,7 +792,7 @@ void analisa_enquanto(){
         sprintf(rotString, "%d", auxrot2);
         gera(rotString, "NULL", " ", " ");
     }
-    else {printf("\terro em %s, faca esperado\n", token->lexema);return;} //\terro
+    else {printf("\terro linha %d, faca esperado\n", lineCounter);return;} //\terro
 
     printf("\n[analisa_enquanto end]\n");
 }
@@ -811,7 +807,7 @@ void analisa_se(){
     lexico();
     printf("\n %s ", token->lexema);
     if (analisa_expressao() != 1)
-        {printf("\terro semantico em %s, expressao invalida\n", token->lexema);return;} //erro, não é bool
+        {printf("\terro semantico linha %d, expressao invalida\n", lineCounter);return;} //erro, não é bool
     popAll();
 
     auxrot = rotulo;
@@ -822,7 +818,7 @@ void analisa_se(){
 
     if (strcmp(token->Simbolo, "sentao") == 0)
         {lexico(); printf("\n %s ", token->lexema);}
-    else {printf("\terro em %s, entao esperado\n", token->lexema);return;} //\terro
+    else {printf("\terro linha %d, entao esperado\n", lineCounter);return;} //\terro
     analisa_comando_simples();
 
 
@@ -908,7 +904,7 @@ int analisa_expressao_simples(){
         }
     tipo = analisa_termo();
     if (tipo != 0 && aux == 0)
-        return 2; //erro, tipo incompativel
+         {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} //erro, tipo incompativel
 
     while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
     {
@@ -930,7 +926,7 @@ int analisa_expressao_simples(){
         lexico();
         printf("\n %s ", token->lexema);
         if (analisa_termo() != tipo)
-            return 2; // erro
+            {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} // erro
     }
     printf("\n[analisa_expressao_simples end]\n");
     return tipo;
@@ -944,17 +940,17 @@ int analisa_termo(){
 
         if(strcmp(token->Simbolo, "se") == 0)
         {
-            if (tipo == 0)
-                return 2;
+            //if (tipo == 0)
+                 //{printf("\nerro teste em %s, tipo  incompativel\n", token->lexema);return 2;}
             insereOperador("AND");
         } else if(strcmp(token->Simbolo, "smult") == 0)
         {
             if (tipo == 1)
-                return 2;
+                 {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}
             insereOperador("MULT");
         } else {
             if (tipo == 1)
-                return 2;
+                 {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}
             insereOperador("DIVI");
         }
 
@@ -963,7 +959,7 @@ int analisa_termo(){
         lexico();
         printf("\n %s ", token->lexema);
         if (analisa_fator() != tipo)
-            return 2; //erro tipos não compatíveis
+             {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;}  //erro tipos não compatíveis
     }
     printf("\n[analisa_termo end]\n");
     return tipo;
@@ -1001,7 +997,7 @@ int  analisa_fator(){
 
                 lexico();
                 printf("\n %s ", token->lexema);
-            } else {printf("\terro semantico em %s, identificador nao declarado\n", token->lexema);return 2;} //erro
+            } else {printf("\terro semantico linha %d, identificador nao declarado\n", lineCounter);return 2;} //erro
         }
     }else if (strcmp(token->Simbolo, "snumero") == 0)
     {
@@ -1027,7 +1023,7 @@ int  analisa_fator(){
                 popParanteses();
                 lexico();
                 printf("\n %s ", token->lexema);}
-        else {printf("\terro em %s, \")\" esperado\n", token->lexema);return;} //\terro
+        else {printf("\terro linha %d, \")\" esperado\n", lineCounter);return;} //\terro
     } else if (strcmp(token->Simbolo, "sverdadeiro") == 0 || strcmp(token->Simbolo, "sfalso") == 0)
         {
             if (strcmp(token->Simbolo, "sverdadeiro") == 0)
@@ -1037,7 +1033,7 @@ int  analisa_fator(){
             lexico();
             printf("\n %s ", token->lexema);
         }
-    else {printf("\terro em %s, fator esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, fator esperado\n", lineCounter);return;}//\terro
     printf("\n[analisa_fator end]\n");
 
     return tipo;
@@ -1067,7 +1063,7 @@ void analisa_subrotinas()
         else analisa_declaracao_funcao();
         if(strcmp(token->Simbolo,"sponto_virgula")==0)
             {lexico(); printf("\n %s ", token->lexema);}
-        else {printf("\terro em %s, \";\" esperado\n", token->lexema);return;}//\terro, ; esperado
+        else {printf("\terro linha %d, \";\" esperado\n", lineCounter);return;}//\terro, ; esperado
     }
     if (flag== 1)
     {
@@ -1101,7 +1097,7 @@ void analisa_declaracao_procedimento(){
             if (strcmp(token->Simbolo, "sponto_virgula") == 0)
                 analisa_bloco();
             else {
-                printf("\terro em %s, \";\" esperado\n", token->lexema);
+                printf("\terro linha %d, \";\" esperado\n", lineCounter);
                 return;
             }
 
@@ -1110,11 +1106,11 @@ void analisa_declaracao_procedimento(){
             escopo_global--;
         }
         else{
-            printf("ERRO, procedimentos com nomes iguais");
+            printf("erro linha %d, procedimentos com nomes iguais", lineCounter);
             return;
         }
     }
-    else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
+    else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
 
     printf("\n[analisa_declaracao_procedimento end]\n");
 
@@ -1153,25 +1149,25 @@ void analisa_declaracao_funcao(){
                     if (strcmp(token->Simbolo, "sponto_virgula") == 0)
                         analisa_bloco();
                     else {
-                        printf("\terro em %s, \";\" esperado\n", token->lexema);
+                        printf("\terro linha %d, \";\" esperado\n", lineCounter);
                         return;
                         }
                 } else {
-                    printf("\terro em %s, tipo nao reconhecido\n", token->lexema);
+                    printf("\terro linha %d, tipo nao reconhecido\n", lineCounter);
                     return;
                 }//\terro
                 Desempilha();
                 gera("", "RETURN", "", "");
                 escopo_global--;
             } else {
-                printf("\terro em %s, \":\" esperado\n", token->lexema);
+                printf("\terro linha %d, \":\" esperado\n", lineCounter);
                 return;
             }//\terro
         }
         else{
             printf("ERRO, identificador já utilizado");
         }
-    }else {printf("\terro em %s, identificador esperado\n", token->lexema);return;}//\terro
+    }else {printf("\terro linha %d, identificador esperado\n", lineCounter);return;}//\terro
     printf("\n[analisa_declaracao_funcao end]\n");
 
 }
@@ -1324,7 +1320,7 @@ int pesquisa_atrib_funcao(char *id){
     tabelaSimbolos *aux = inicio->topo;
 
     do{
-        if(strcmp(aux->lexema, id) == 0)
+        if(strcmp(aux->lexema, id) == 0 && aux->nivel == escopo_global)
         {
 
             if (strcmp(aux->tipo, "funcao inteiro") == 0)
