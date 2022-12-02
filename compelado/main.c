@@ -74,9 +74,9 @@ void analisa_se();
 
 int analisa_expressao();
 
-int analisa_expressao_simples();
+int analisa_expressao_simples(bool relac);
 
-int analisa_termo();
+int analisa_termo(bool relac);
 
 int analisa_fator();
 
@@ -152,8 +152,8 @@ int main(){
     char linemarker[2] = {13,0};
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera3.txt","r");
-    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera3.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera3.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
@@ -183,8 +183,11 @@ int main(){
     if (resultado == 0)
         printf("\nanalise concluida\n");
     else printf("\nerro na analise\n");
-    fclose(arquivo);
+
+
     fclose(codigo);
+    fclose(arquivo);
+
     return 0;
 
 }
@@ -664,7 +667,7 @@ void analisa_atribuicao(){
 
 
     if (exp_tipo == 2)
-        { printf("\terro semantico linha %d, expressao invalida \n", lineCounter);return;}
+        { printf("\terro semantico linha %d, expressao invalida \n", lineCounter);funcEnd = 1;return;}
     //if (((strcmp(tipo, "variavel booleano")  == 0|| strcmp(tipo, "funcao booleana")  == 0) && exp_tipo == -1)||((strcmp(tipo, "variavel inteiro") == 0 || strcmp(tipo, "funcao inteiro")  == 0) && exp_tipo == 0))
 
     if(mem == -1)
@@ -680,7 +683,7 @@ void analisa_atribuicao(){
             return; // sem erro
         }
     }
-    else if ((strcmp(tipoVar, "variavel booleano")  == 0 && exp_tipo == -1)||(strcmp(tipoVar, "variavel inteiro") == 0  && exp_tipo == 0))
+    else if ((strcmp(tipoVar, "variavel booleano")  == 0 && exp_tipo == 1)||(strcmp(tipoVar, "variavel inteiro") == 0  && exp_tipo == 0))
     {
         sprintf(memString, "%d", mem);
         gera("", "STR", memString, "");
@@ -688,6 +691,7 @@ void analisa_atribuicao(){
         return; // sem erro
     }
 
+    funcEnd = 1;
     printf("\terro semantico linha %d, tipos incompativeis %d\n", lineCounter, exp_tipo);
     return; //expressão incompatível com váriavel
 }
@@ -860,7 +864,7 @@ int analisa_expressao(){
 
 
 
-    int res = analisa_expressao_simples();                // 0 = int, 1 = bool
+    int res = analisa_expressao_simples(false);                // 0 = int, 1 = bool
     for (I = 0; I<6 ;I++)
     {
        if( strcmp(token->Simbolo, operadores[I]) == 0)
@@ -882,7 +886,7 @@ int analisa_expressao(){
 
         lexico();
         printf("\n %s ", token->lexema);
-        if (analisa_expressao_simples() != 0)
+        if (analisa_expressao_simples(true) != 0)
             return 2; //erro
         res = 1;
     }
@@ -890,7 +894,7 @@ int analisa_expressao(){
     return res;
 }
 
-int analisa_expressao_simples(){
+int analisa_expressao_simples(bool relac){
     printf("\n[analisa_expressao_simples]\n");
     int aux = 1;
     int tipo;
@@ -902,15 +906,18 @@ int analisa_expressao_simples(){
             lexico();
             printf("\n %s ", token->lexema);
         }
-    tipo = analisa_termo();
+    tipo = analisa_termo(relac);
     if (tipo != 0 && aux == 0)
          {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} //erro, tipo incompativel
+
 
     while(strcmp(token->Simbolo, "smais") == 0 || strcmp(token->Simbolo, "smenos") == 0 || strcmp(token->Simbolo, "sou") == 0)
     {
         if (strcmp(token->Simbolo, "sou") == 0)
         {
            aux = 1;
+           if (relac)
+            tipo = 1;
            insereOperador("OR");
         } else if(strcmp(token->Simbolo, "smais") == 0)
         {
@@ -925,14 +932,16 @@ int analisa_expressao_simples(){
             return 2; //erro
         lexico();
         printf("\n %s ", token->lexema);
-        if (analisa_termo() != tipo)
+        if (analisa_termo(relac) != tipo)
             {printf("\nerro linha %d, tipo  incompativel\n", lineCounter);return 2;} // erro
     }
     printf("\n[analisa_expressao_simples end]\n");
+    if(relac == true && tipo == 1)
+        return 0;
     return tipo;
 }
 
-int analisa_termo(){
+int analisa_termo(bool relac){
     printf("\n[analisa_termo]\n");
     int tipo = analisa_fator();
     while(strcmp(token->Simbolo, "smult") == 0 || strcmp(token->Simbolo, "sdiv") == 0 || strcmp(token->Simbolo, "se") == 0)
@@ -940,8 +949,10 @@ int analisa_termo(){
 
         if(strcmp(token->Simbolo, "se") == 0)
         {
-            //if (tipo == 0)
-                 //{printf("\nerro teste em %s, tipo  incompativel\n", token->lexema);return 2;}
+            if (relac)
+                tipo = 1;
+            else if (tipo == 0)
+                 {printf("\nerro teste em %s, tipo  incompativel\n", token->lexema);return 2;}
             insereOperador("AND");
         } else if(strcmp(token->Simbolo, "smult") == 0)
         {
@@ -1006,6 +1017,7 @@ int  analisa_fator(){
         printf("\n %s ", token->lexema);
     } else if (strcmp(token->Simbolo, "snao") == 0)
     {
+        insereOperador("NEG");
         lexico();
         printf("\n %s ", token->lexema);
         tipo = analisa_fator();

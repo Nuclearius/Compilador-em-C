@@ -27,11 +27,13 @@
 	LDC	5		
 	CMA			
 	AND			
+	STR	8		
 	LDV	5		
 	LDV	9		
 	ADD			
 	LDC	10		
 	CME			
+	NEG			
 	LDV	5		
 	INV			
 	LDV	8		
