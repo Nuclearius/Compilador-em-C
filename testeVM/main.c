@@ -5,10 +5,33 @@
 #include <ctype.h>
 
 char Memoria[50];	//memoria
-int l;				//linha
-int p;				//flag
-FILE *arquivo;		
-char f[200][26];
+int l = 0;				//linha
+int p=0;				//flag
+FILE *arquivo;
+char f[200][26] = {0};
+
+int main()
+
+{
+    printf("vm teste go\n");
+    openFILE();
+    int I = 0;
+    while ( I < 200 && f[I][0] != 0 )
+    {
+    printf("%d:\t %s\n", I+1, f[I]);
+    I++;
+    }
+    printf("read file end\n");
+    while (I != -1)
+    {
+        I = execucao(f[l]);
+    }
+
+    printf("\nFIM\n");
+    return 0;
+}
+
+
 
 int pilha()
 {
@@ -20,13 +43,14 @@ int pilha()
 	}
 	return 0;
 }
+
 void openFILE(){
-     arquivo=fopen("","r");
+     arquivo=fopen("codigo.txt","r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
     }
-char charA;
+    char charA;
 	charA = fgetc(arquivo);
 	int r = 0;
 	int c = 0;
@@ -44,52 +68,104 @@ char charA;
 	}
 	return r;
 }
+
 int busca(int label){
-	char rotulo [5];
-	char comando [9];
-	int j,k;
+	char rotulo [5] = {0};
+	char comando [9] = {0};
+	int j,k = 0, aux;
 	int flag = 0;
-	
+
+
+/*
 	for(j=0;j<4;j++){
 		rotulo[j] = f[k][j];
 	}
+
 	rotulo[4] = '\0';
-	
+
 	for(j=0;j<8;j++){
-		comando[j] = f[k][j+4];	
+		comando[j] = f[k][j+4];
 	}
 	comando[8] = '\0';
-	
+*/
 	while(strcmp(comando,"HLT") && atoi(rotulo) != label){
-		
+
 		k++;
-		for(j=0;j<4;j++){
-			rotulo[j] = f[k][j];
-		}
-		rotulo[4] = '\0';
-		
-		for(j=0;j<8;j++){
-			comando[j] = f[k][j+4];	
-		}
-		comando[8] = '\0';
-		
+		j = 0;
+		aux = 0;
+
+        while (f[k][j] != 9)
+        {
+            rotulo[j] = f[k][j];
+            j++;
+        }
+        aux = j+1;
+        rotulo[aux] = 0;
+        j = 0;
+        while (f[k][aux+j] != 9)
+        {
+            comando[j] = f[k][aux+j];
+            j++;
+        }
+         comando[aux+j+1] = 0;
+
 		if(!strcmp(comando,"HLT")){
 			flag = 1;
 		}
+
 	}
 	if(flag){
 		return -1;
 	}
 	else{
+        printf ( " jump to: %d \n", k+1);
 		return k;
 	}
 }
-int execucao()
+int execucao(char *line)
 {
-	char rotulo [10];
-	char comando [10];
-	char param1 [10];
-	char param2 [10];
+
+	char rotulo [10] = {0};
+	char comando [10] = {0};
+	char param1 [10] = {0};
+	char param2 [10] = {0};
+
+
+
+	int I = 0, aux = 0;
+	while (line[I] != 9)
+    {
+     rotulo[I] = line[I];
+     I++;
+    }
+    aux = I + 1;
+    I=0;
+
+    while (line[aux+I] != 9)
+    {
+        comando[I] = line[aux+I];
+        I++;
+    }
+    aux = aux+ I + 1;
+    I = 0;
+
+    while(line[aux+I] != 9)
+    {
+        param1[I] = line[aux+I];
+        I++;
+    }
+    aux = aux+ I + 1;
+    I = 0;
+
+
+    while(line[aux+I] != 9)
+    {
+        param2[I] = line[aux+I];
+        I++;
+    }
+
+
+    //printf("teste:  %s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
 
 	if(!strcmp(comando,"START"))
 	{
@@ -105,8 +181,10 @@ int execucao()
 				printf("alloc %d %d\n",m,n);			//alocacao da memoria
 				for(k=0;k<n;k++)
 				{
+
+				    Memoria[p]=Memoria[m+k];
 					p++;
-					Memoria[p]=Memoria[m+k];
+
 				}
 				l++;}
 
@@ -125,14 +203,17 @@ int execucao()
 			}
 
     else if(!strcmp(comando,"CALL")){
-                    int p;
-                    l++;
-                    Memoria[l]=p+1;				//chamada
-                    p=atoi(param1);
-                   printf("call %d\n",p);
+                    int r;
+                    r=atoi(param1);
+                    p++;
+                    Memoria[p]=l+1;				//chamada
+                    printf(" calling from: %d ", l);
+                    l = busca(r);
+                   printf("call %d\n",Memoria[p]);
                 }
      else if(!strcmp(comando,"RETURN")){
-                    printf("RETURN %d",p);		//RETURN
+                    printf("RETURN %d",Memoria[p]);		//RETURN
+                     printf(" returning to: %d ", Memoria[p]);
                     l=Memoria[p];
                     p--;
 
@@ -142,14 +223,14 @@ int execucao()
                 return -1;
           }
      else if(!strcmp(comando,"RD")){
-            if(!strcmp(comando,"RD")){
-                printf("READ");
+                printf("READ\n");
                 l++;                        //comando ler
-                scanf("%d",Memoria[l]);
-                p++;}
+                p++;
+                scanf("%d",&Memoria[p]);
+
           }
 
-     else if(!strcmp(comando,"PRN")){
+     else if(!strcmp(comando,"PRN\n")){
         printf("PRINT %d",Memoria[l]);    //comando printar
         p--;
         l++;
@@ -174,12 +255,12 @@ int execucao()
 		l++;
 	}
 	 else if (!strcmp(comando,"SUB")){
-		Memoria[p-1]= Memoria[p-1]-Memoria[p];		//subtraÃ§ao
+		Memoria[p-1]= Memoria[p-1]-Memoria[p];		//subtraçao
 		p--;
 		l++;
 	}
 	 else if (!strcmp(comando,"MULT")){
-		Memoria[p-1]= Memoria[p-1]*Memoria[p];		//multiplicaÃ§ao
+		Memoria[p-1]= Memoria[p-1]*Memoria[p];		//multiplicaçao
 		p--;
 		l++;
 	}
@@ -269,14 +350,14 @@ int execucao()
 	}else if(!strcmp(comando,"STR")){
 		int n;
 		n = atoi(param1);
-		Memoria[p] = Memoria[p];
+		Memoria[n] = Memoria[p];
 		p--;
 		l++;
 	}else if(!strcmp(comando,"JMP")){
 		int u;
 		u = atoi(param1);
 		l = busca(u);
-	}else if(!strcmp(comando,"JMPF    ")){
+	}else if(!strcmp(comando,"JMPF")){
 		if(Memoria[p] == 0){
 			int u = atoi(param1);
 			l = busca(u);

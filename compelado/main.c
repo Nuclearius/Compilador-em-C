@@ -154,8 +154,8 @@ int main(){
     char linemarker[2] = {13,0};
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
-    arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
-    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera3.txt","r");
+    //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
     if(arquivo == NULL) {
@@ -197,9 +197,13 @@ int main(){
     Desempilha();
 
 
-    fclose(arquivo);
     fclose(erros);
     fclose(codigo);
+
+
+
+    fclose(arquivo);
+
 
 
     return 0;

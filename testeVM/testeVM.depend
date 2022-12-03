@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1670084070 source:c:\users\nucle\documents\github\compilador-em-c\testevm\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<stdbool.h>
+	<ctype.h>
+
