@@ -165,7 +165,7 @@ int execucao(char *line)
     }
 
 
-    //printf("teste:  %s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
+    printf("teste:  %s\t%s\t%s\t%s\t\n", rotulo, comando, param1, param2);
 
 	if(!strcmp(comando,"START"))
 	{
@@ -181,9 +181,9 @@ int execucao(char *line)
 				printf("alloc %d %d\n",m,n);			//alocacao da memoria
 				for(k=0;k<n;k++)
 				{
-
+                    p++;
 				    Memoria[p]=Memoria[m+k];
-					p++;
+
 
 				}
 				l++;}
@@ -207,13 +207,11 @@ int execucao(char *line)
                     r=atoi(param1);
                     p++;
                     Memoria[p]=l+1;				//chamada
-                    printf(" calling from: %d ", l);
                     l = busca(r);
                    printf("call %d\n",Memoria[p]);
                 }
      else if(!strcmp(comando,"RETURN")){
                     printf("RETURN %d",Memoria[p]);		//RETURN
-                     printf(" returning to: %d ", Memoria[p]);
                     l=Memoria[p];
                     p--;
 
@@ -230,15 +228,15 @@ int execucao(char *line)
 
           }
 
-     else if(!strcmp(comando,"PRN\n")){
-        printf("PRINT %d",Memoria[l]);    //comando printar
+     else if(!strcmp(comando,"PRN")){
+        printf("PRINT\n%d\n",Memoria[p]);    //comando printar
         p--;
         l++;
         }
      else if(!strcmp(comando,"LDC")){
             int k;
             k=atoi(param1);
-            printf("%d",k); 		//carregar cosntante
+            printf("constante %d\n",k); 		//carregar cosntante
             p++;
             Memoria[p]=k;
             l++;
@@ -247,6 +245,7 @@ int execucao(char *line)
 		int n = atoi(param1);
 		p++;
 		Memoria[p] = Memoria[n];		//carregar variavel
+		printf("variavel %d\n",Memoria[p]);
 		l++;
 		}
 	 else if (!strcmp(comando,"ADD")){
@@ -273,14 +272,14 @@ int execucao(char *line)
 		Memoria[p]= -(Memoria[p]);				//inverter sinal
 		l++;
 	}else if(!strcmp(comando,"AND")){
-			if(Memoria[p-1] == 1 && Memoria[p] == 1){
+        if(Memoria[p-1] == 1 && Memoria[p] == 1){
 			Memoria[p-1] = 1;
-			}
+        }
 		else{
 			Memoria[p-1] = 0;
-				p--;
-				l++;
-			}
+        }
+        p--;
+        l++;
 	}else if(!strcmp(comando,"OR")){
 		if(Memoria[p-1] == 1 || Memoria[p] == 1){
 			Memoria[p-1] = 1;
