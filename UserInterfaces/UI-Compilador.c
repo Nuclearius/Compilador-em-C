@@ -1,4 +1,9 @@
 #include <gtk/gtk.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <string.h>
 
 
 GtkWidget *win;
@@ -82,10 +87,41 @@ static void click_open (GtkButton *btn, gpointer used_data){
 	gtk_native_dialog_show (GTK_NATIVE_DIALOG (native));
 }
 
-/*static void click_run (GtkButton *btn, gpointer used_data){
-    GtkTextBuffer *tb2;
-    gtk_text_buffer_set_text (used_data, "saida da compilaçao", -1);
-}*/
+static void click_run (GtkButton *btn, gpointer used_data){
+
+	if(isnew)
+		gtk_text_buffer_set_text (used_data, "Salve antes de compilar", -1);
+	
+	else{
+	
+		pid_t cpid;
+		int stat;
+		
+		if(fork() == 0){
+		
+			char* args[] = {"./compiler", filename, NULL};
+			execv("./compiler", args);
+		}
+		else
+			cpid = wait(&stat);
+			
+		if(WIFEXITED(stat)){
+		
+			FILE* compLog;
+			if((compLog = fopen("erros.txt", "r")) == NULL){
+				printf("ERRO");
+				exit(1);
+			}
+			char s[100];
+			fgets(s, 100, compLog);
+			gtk_text_buffer_set_text(used_data, s, -1);
+		}
+		else if(WIFSIGNALED(stat))
+			psignal(WTERMSIG(stat), "Exit signal");
+	
+	}
+    
+}
 
 
 static void click_new(GtkButton *btn, gpointer used_data){
@@ -177,7 +213,7 @@ static void app_activate (GApplication *app, gpointer user_data) {
 
 	g_signal_connect(btno, "clicked", G_CALLBACK(click_open),NULL);
 	g_signal_connect(btns, "clicked", G_CALLBACK(click_save),NULL);
-	//g_signal_connect(btnc, "clicked", G_CALLBACK(click_run),tb2);
+	g_signal_connect(btnc, "clicked", G_CALLBACK(click_run),tb2);
 	g_signal_connect(btnn, "clicked", G_CALLBACK(click_new),NULL);
 
 	scr = gtk_scrolled_window_new ();

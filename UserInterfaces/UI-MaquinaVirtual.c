@@ -44,6 +44,10 @@ static void click_open (GtkButton *btn, gpointer used_data){
     GtkWidget *scr;
     GtkWidget *scr2;
     GtkWidget *scr3;
+    GtkWidget *scr4;
+    
+    GtkEntryBuffer* eb;
+    GtkWidget* entry;
 
     GtkWidget *tv;
     GtkWidget *tv2;
@@ -51,7 +55,8 @@ static void click_open (GtkButton *btn, gpointer used_data){
     GtkWidget *tv4;
     GtkWidget *tv5;
     GtkWidget *tv6;
-
+    GtkWidget *tv7;
+    
     GtkWidget *boxv;
     GtkWidget *boxv2;
     GtkWidget *boxv3;
@@ -71,6 +76,7 @@ static void click_open (GtkButton *btn, gpointer used_data){
     GtkTextBuffer *tb4;
     GtkTextBuffer *tb5;
     GtkTextBuffer *tb6;
+    GtkTextBuffer *tb7;
 
     gchar *text;
     gchar *text2;
@@ -134,8 +140,7 @@ static void click_open (GtkButton *btn, gpointer used_data){
     gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scr), tv);
     gtk_box_append(GTK_BOX (boxv2),scr);
     gtk_scrolled_window_set_has_frame(scr, TRUE);
-    gtk_widget_set_vexpand(scr, TRUE);
-    gtk_widget_set_size_request (scr, 600,720);
+    gtk_widget_set_size_request (scr, 720, 350);
 
 
     boxv3 = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -163,7 +168,7 @@ static void click_open (GtkButton *btn, gpointer used_data){
     gtk_scrolled_window_set_has_frame(scr2, TRUE);
     gtk_scrolled_window_get_max_content_height(scr2);
     gtk_widget_set_hexpand(scr2, TRUE);
-    gtk_widget_set_vexpand(scr2, TRUE);
+    gtk_widget_set_size_request (scr2, 0,350);
 
 
 ///titulo saida
@@ -188,7 +193,15 @@ static void click_open (GtkButton *btn, gpointer used_data){
     gtk_scrolled_window_set_has_frame(scr3, TRUE);
     gtk_scrolled_window_get_min_content_height(scr3);
     gtk_widget_set_hexpand(scr3, TRUE);
-    gtk_widget_set_vexpand(scr3, TRUE);
+    gtk_widget_set_vexpand(scr3, TRUE);    
+
+///entrada
+    entry= gtk_entry_new();
+    eb=gtk_entry_get_buffer(entry);
+    gtk_box_append(GTK_BOX (boxv),entry);
+    gtk_entry_set_has_frame(entry,TRUE);
+    gtk_widget_set_vexpand(entry, FALSE);
+    gtk_widget_set_hexpand(entry, TRUE);
 
     gtk_widget_show (win);
  }
@@ -203,3 +216,4 @@ int main (int argc, char **argv) {
    g_object_unref (app);
    return stat;
  }
+ 
