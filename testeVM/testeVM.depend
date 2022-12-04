@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1670088667 source:c:\users\nucle\documents\github\compilador-em-c\testevm\main.c
+1670165370 source:c:\users\nucle\documents\github\compilador-em-c\testevm\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>

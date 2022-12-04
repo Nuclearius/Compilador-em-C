@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-char Memoria[50];	//memoria
+int Memoria[50];	//memoria
 int l = 0;				//linha
-int p=0;				//flag
+int p;				//flag
 FILE *arquivo;
 char f[200][26] = {0};
 

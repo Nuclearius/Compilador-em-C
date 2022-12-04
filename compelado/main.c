@@ -111,9 +111,29 @@ int pesquisa_procedimento(char *id);
 
 int pesquisa_funcao(char *id);
 
+int pesquisa_atrib_funcao(char *id);
+
 char* confereTipo(char* lexema);
 
+
+void iniciaPosFixa();
+
+void inserePosFixa(char valor[], int prec);
+
+char* popPosFixa();
+
+void insereOperador(char op[]);
+
+void popParanteses ();
+
+void popAll();
+
+
 void gera(char *rotulo, char *comando, char *param1, char *param2);
+
+void escreveErro(char *erro);
+
+void printPosFixa();
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* VARIAVEIS *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
 char text[2048];
@@ -149,15 +169,16 @@ int lineCounter = 1;
 
 /*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~* MAIN *~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*/
 
-int main(){
+int main(int argc, char **argv){
     char line[LINE_LENGTH];
     char linemarker[2] = {13,0};
     int resultado;
     //O endereço deve ser alterado para o adequado SEMPRE
     //arquivo=fopen("C:/Users/nucle/OneDrive/Documentos/GitHub/Compilador-em-C/compelado/gera1.txt","r");
-    arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
+    //arquivo=fopen("C:/Users/nucle/Documents/GitHub/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("/home/luckytods/CLionProjects/Compilador-em-C/compelado/gera1.txt","r");
     //arquivo=fopen("C:/Users/19088582/Downloads/Compilador-em-C-main/compelado/gera2.txt","r");
+    arquivo=fopen(argv[1],"r");
     if(arquivo == NULL) {
         printf("ERRO");
         exit(1);
@@ -1522,7 +1543,7 @@ void escreveErro(char *erro)
 {
     fprintf(erros, "\nERRO %s. LINHA: %d", erro, lineCounter);
 }
-;
+
 
 void printPosFixa(){
     psPilha *aux = psInicio->topo;
