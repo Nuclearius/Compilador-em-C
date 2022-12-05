@@ -23,6 +23,11 @@ GtkTextBuffer *tb5;
 GtkTextBuffer *tb6;
 GtkTextBuffer *tb7;
 
+GtkWidget *btnn;
+    GtkWidget *btno;
+    GtkWidget *btnr;
+    GtkWidget *btnrs;
+
 bool typing = false;
 bool started = false;
 bool step = false;
@@ -41,6 +46,8 @@ char f[200][26] = {0};
 
 
 static void on_entry_activate(GtkEntry *entry,gpointer output);
+
+static void btnControl();
 
 static void click_run(GtkButton *btn, gpointer output)
 {
@@ -128,10 +135,7 @@ static void click_open (GtkButton *btn, gpointer used_data){
     GtkWidget *boxh;
     GtkWidget *boxh2;
 
-    GtkWidget *btnn;
-    GtkWidget *btno;
-    GtkWidget *btnr;
-    GtkWidget *btnrs;
+    
 
     GtkWidget *dmy10;
     GtkWidget *dmy15;
@@ -307,10 +311,34 @@ static void click_open (GtkButton *btn, gpointer used_data){
     gtk_widget_show (win);
  }
  
+ static void btnControl(){
+
+	if(started){
+    	gtk_widget_set_sensitive(GTK_WIDGET(btno),FALSE);
+    	gtk_widget_set_sensitive(GTK_WIDGET(btnn),FALSE);
+    	if(typing){
+    		gtk_widget_set_sensitive(GTK_WIDGET(btnr),FALSE);
+    		gtk_widget_set_sensitive(GTK_WIDGET(btnrs),FALSE);
+    		gtk_widget_set_sensitive(GTK_WIDGET(entry),TRUE);
+    	}
+    	else{
+    		gtk_widget_set_sensitive(GTK_WIDGET(btnr),TRUE);
+    		gtk_widget_set_sensitive(GTK_WIDGET(btnrs),TRUE);
+    		gtk_widget_set_sensitive(GTK_WIDGET(entry),FALSE);
+    	}
+    }
+    else{
+    	gtk_widget_set_sensitive(GTK_WIDGET(btno),TRUE);
+    	gtk_widget_set_sensitive(GTK_WIDGET(btnn),TRUE);
+    }
+
+}
+ 
  static void on_entry_activate(GtkEntry *entry,gpointer output)
 {
     Memoria[p] =atoi(gtk_entry_buffer_get_text(eb));
     typing = false;
+    btnControl();
     gtk_text_buffer_set_text (eb, "", -1);
     gtk_widget_queue_draw(entry);
     while (g_main_context_pending(NULL)) {
@@ -429,7 +457,8 @@ int busca(int label){
 
 int lerLinha(char *line, gpointer output)
 {
-
+	
+	btnControl();
 	char rotulo [10] = {0};
 	char comando [10] = {0};
 	char param1 [10] = {0};
@@ -530,6 +559,7 @@ int lerLinha(char *line, gpointer output)
      else if(!strcmp(comando,"RD")){
                 printf("READ\n");
                 typing = true;
+                btnControl();
                 l++;
 		p++;
 		return -1;
