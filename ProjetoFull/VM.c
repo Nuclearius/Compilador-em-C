@@ -580,7 +580,7 @@ int lerLinha(char *line, gpointer output)
 		p--;
 		l++;
 	}
-	 else if (!strcmp(comando,"DIV")){
+	 else if (!strcmp(comando,"DIVI")){
 		Memoria[p-1]= Memoria[p-1]/Memoria[p];		//divisao
 		p--;
 		l++;
