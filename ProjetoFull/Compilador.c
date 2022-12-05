@@ -199,7 +199,7 @@ int main(int argc, char **argv){
         strcat(text,linemarker);
         memset(line, 0, sizeof(line));
     }
-    codigo = fopen("codigo.txt", "w");
+    codigo = fopen("codigo.obj", "w");
     erros = fopen("erros.txt", "w");
 
     resultado = analisador();
